@@ -57,6 +57,7 @@ services:
       QUARKUS_HTTP_CORS_ENABLED: "true"
       QUARKUS_HTTP_CORS_ORIGINS: http://localhost:3000,http://localhost:3001
       EOS_PASS_SIGNING_SECRET: ${EOS_PASS_SIGNING_SECRET:-local-development-only-pass-secret-change-me}
+      EOS_VISIT_SESSION_SIGNING_SECRET: ${EOS_VISIT_SESSION_SIGNING_SECRET:-local-development-only-visit-secret-change-me}
     depends_on:
       db:
         condition: service_healthy
