@@ -4,6 +4,38 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: <https://quarkus.io/>.
 
+## Admin API
+
+All admin endpoints require an authenticated principal with the `eos-admin`
+role. Responses containing visitor or location data use `Cache-Control: no-store`.
+
+### Locations
+
+- `GET /api/v1/admin/locations`
+- `POST /api/v1/admin/locations`
+- `GET /api/v1/admin/locations/{locationId}`
+- `PUT /api/v1/admin/locations/{locationId}`
+- `DELETE /api/v1/admin/locations/{locationId}`
+
+A location cannot be deleted while visits reference it; the API returns `409
+Conflict` in that case.
+
+### Visits
+
+- `GET /api/v1/admin/visits` supports optional `date`, `status`, `locationId`,
+  `limit`, and `offset` query parameters.
+- `POST /api/v1/admin/visits`
+- `GET /api/v1/admin/visits/{visitId}`
+- `PUT /api/v1/admin/visits/{visitId}`
+- `POST /api/v1/admin/visits/{visitId}/check-out`
+- `DELETE /api/v1/admin/visits/{visitId}`
+
+Valid visit states are `REGISTERED`, `CHECKED_IN`, `CHECKED_OUT`, and
+`CANCELLED`. New visits default to `REGISTERED` when `status` is omitted. The
+explicit checkout action is idempotent and records the checkout time. The
+Flyway migration creates the `locations` and `visits` tables used by both this
+API and the visitor-pass PDF exporter.
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
