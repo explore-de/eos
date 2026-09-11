@@ -3,6 +3,7 @@ package de.explore.eos.pass;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -38,25 +39,30 @@ public class VisitPassRepository
 				{
 					return Optional.empty();
 				}
-				return Optional.of(new VisitPassData(
-					result.getObject("id", UUID.class),
-					result.getString("visitor_name"),
-					result.getString("visitor_company"),
-					result.getObject("visit_date", java.time.LocalDate.class),
-					result.getString("purpose"),
-					result.getString("host_name"),
-					result.getString("status"),
-					result.getString("location_name"),
-					result.getString("street"),
-					result.getString("postal_code"),
-					result.getString("city"),
-					result.getString("country"),
-					result.getString("additional_info")));
+				return Optional.of(toVisitPassData(result));
 			}
 		}
 		catch (SQLException exception)
 		{
 			throw new IllegalStateException("Could not load visitor-pass data", exception);
 		}
+	}
+
+	private static VisitPassData toVisitPassData(ResultSet result) throws SQLException
+	{
+		return new VisitPassData(
+			result.getObject("id", UUID.class),
+			result.getString("visitor_name"),
+			result.getString("visitor_company"),
+			result.getObject("visit_date", LocalDate.class),
+			result.getString("purpose"),
+			result.getString("host_name"),
+			result.getString("status"),
+			result.getString("location_name"),
+			result.getString("street"),
+			result.getString("postal_code"),
+			result.getString("city"),
+			result.getString("country"),
+			result.getString("additional_info"));
 	}
 }

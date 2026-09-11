@@ -1,6 +1,7 @@
 package de.explore.eos.pass;
 
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
 import java.security.MessageDigest;
 import java.time.Clock;
 import java.time.Duration;
@@ -20,6 +21,15 @@ import javax.crypto.spec.SecretKeySpec;
 public class PassTokenService
 {
 	private static final String VERSION = "v1";
+	private static final String SEPARATOR_PATTERN = "\\.";
+	private static final String UNSIGNED_FORMAT = "%s.%s";
+	private static final String TOKEN_FORMAT = "%s.%s.%s";
+	private static final String PAYLOAD_FORMAT = "%s:%d";
+	private static final char PAYLOAD_SEPARATOR = ':';
+	private static final int TOKEN_PART_COUNT = 3;
+	private static final int MINIMUM_SECRET_LENGTH = 32;
+	private static final String HMAC_ALGORITHM = "HmacSHA256";
+	private static final String INVALID_TOKEN = "Invalid pass token";
 
 	@ConfigProperty(name = "eos.pass.signing-secret")
 	Optional<String> configuredSecret;
@@ -42,58 +52,81 @@ public class PassTokenService
 
 	public String issue(UUID visitId)
 	{
-		if (timeToLive.isZero() || timeToLive.isNegative())
+		if (isNotPositive(timeToLive))
 		{
 			throw new IllegalStateException("eos.pass.verification-ttl must be positive");
 		}
-		long expiresAt = Instant.now(clock).plus(timeToLive).getEpochSecond();
-		String payload = visitId + ":" + expiresAt;
-		String encodedPayload = Base64.getUrlEncoder().withoutPadding()
-			.encodeToString(payload.getBytes(StandardCharsets.UTF_8));
-		String unsigned = VERSION + "." + encodedPayload;
-		return unsigned + "." + sign(unsigned);
+		String encodedPayload = encodePayload(visitId);
+		String unsigned = String.format(UNSIGNED_FORMAT, VERSION, encodedPayload);
+		return String.format(TOKEN_FORMAT, VERSION, encodedPayload, sign(unsigned));
 	}
 
 	public void verify(String token, UUID expectedVisitId)
+	{
+		String[] parts = parts(token);
+		verifySignature(parts);
+		verifyPayload(parts[1], expectedVisitId);
+	}
+
+	private static boolean isNotPositive(Duration duration)
+	{
+		return duration.isZero() || duration.isNegative();
+	}
+
+	private String encodePayload(UUID visitId)
+	{
+		long expiresAt = Instant.now(clock).plus(timeToLive).getEpochSecond();
+		String payload = String.format(PAYLOAD_FORMAT, visitId, expiresAt);
+		return encode(payload.getBytes(StandardCharsets.UTF_8));
+	}
+
+	private static String[] parts(String token)
 	{
 		if (token == null)
 		{
 			throw new InvalidPassTokenException("Missing pass token");
 		}
-		String[] parts = token.split("\\.", -1);
-		if (parts.length != 3 || !VERSION.equals(parts[0]))
+		String[] parts = token.split(SEPARATOR_PATTERN, -1);
+		if (parts.length != TOKEN_PART_COUNT || !VERSION.equals(parts[0]))
 		{
-			throw new InvalidPassTokenException("Invalid pass token");
+			throw new InvalidPassTokenException(INVALID_TOKEN);
 		}
+		return parts;
+	}
 
-		String unsigned = parts[0] + "." + parts[1];
+	private void verifySignature(String[] parts)
+	{
+		String unsigned = String.format(UNSIGNED_FORMAT, parts[0], parts[1]);
 		byte[] suppliedSignature;
 		byte[] expectedSignature;
 		try
 		{
-			suppliedSignature = Base64.getUrlDecoder().decode(parts[2]);
-			expectedSignature = Base64.getUrlDecoder().decode(sign(unsigned));
+			suppliedSignature = decode(parts[2]);
+			expectedSignature = decode(sign(unsigned));
 		}
 		catch (IllegalArgumentException exception)
 		{
-			throw new InvalidPassTokenException("Invalid pass token");
+			throw new InvalidPassTokenException(INVALID_TOKEN);
 		}
 		if (!MessageDigest.isEqual(expectedSignature, suppliedSignature))
 		{
-			throw new InvalidPassTokenException("Invalid pass token");
+			throw new InvalidPassTokenException(INVALID_TOKEN);
 		}
+	}
 
+	private void verifyPayload(String encodedPayload, UUID expectedVisitId)
+	{
 		try
 		{
-			String payload = new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8);
-			int separator = payload.lastIndexOf(':');
+			String payload = new String(decode(encodedPayload), StandardCharsets.UTF_8);
+			int separator = payload.lastIndexOf(PAYLOAD_SEPARATOR);
 			UUID tokenVisitId = UUID.fromString(payload.substring(0, separator));
 			long expiresAt = Long.parseLong(payload.substring(separator + 1));
 			if (!expectedVisitId.equals(tokenVisitId))
 			{
 				throw new InvalidPassTokenException("Pass token does not match this visit");
 			}
-			if (Instant.now(clock).getEpochSecond() >= expiresAt)
+			if (hasExpired(expiresAt))
 			{
 				throw new InvalidPassTokenException("Pass token has expired");
 			}
@@ -104,27 +137,45 @@ public class PassTokenService
 		}
 		catch (RuntimeException exception)
 		{
-			throw new InvalidPassTokenException("Invalid pass token");
+			throw new InvalidPassTokenException(INVALID_TOKEN);
 		}
+	}
+
+	private boolean hasExpired(long expiresAt)
+	{
+		return Instant.now(clock).getEpochSecond() >= expiresAt;
 	}
 
 	private String sign(String value)
 	{
-		String secret = configuredSecret
-			.filter(candidate -> candidate.length() >= 32)
-			.orElseThrow(() -> new IllegalStateException(
-				"eos.pass.signing-secret must contain at least 32 characters"));
 		try
 		{
-			Mac mac = Mac.getInstance("HmacSHA256");
-			mac.init(new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-			return Base64.getUrlEncoder().withoutPadding()
-				.encodeToString(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
+			Mac mac = Mac.getInstance(HMAC_ALGORITHM);
+			mac.init(new SecretKeySpec(requireSecret().getBytes(StandardCharsets.UTF_8), HMAC_ALGORITHM));
+			return encode(mac.doFinal(value.getBytes(StandardCharsets.UTF_8)));
 		}
-		catch (Exception exception)
+		catch (GeneralSecurityException exception)
 		{
 			throw new IllegalStateException("Could not sign visitor-pass token", exception);
 		}
+	}
+
+	private String requireSecret()
+	{
+		return configuredSecret
+			.filter(candidate -> candidate.length() >= MINIMUM_SECRET_LENGTH)
+			.orElseThrow(() -> new IllegalStateException(
+				"eos.pass.signing-secret must contain at least " + MINIMUM_SECRET_LENGTH + " characters"));
+	}
+
+	private static String encode(byte[] value)
+	{
+		return Base64.getUrlEncoder().withoutPadding().encodeToString(value);
+	}
+
+	private static byte[] decode(String value)
+	{
+		return Base64.getUrlDecoder().decode(value);
 	}
 
 	public static final class InvalidPassTokenException extends RuntimeException

@@ -40,6 +40,57 @@ class PassTokenServiceTest
 	}
 
 	@Test
+	void rejectsAMissingOrStructurallyBrokenToken()
+	{
+		// given
+		PassTokenService service = new PassTokenService(SECRET, Duration.ofHours(1), NOW);
+		String token = service.issue(VISIT_ID);
+
+		// when & then
+		assertThrows(InvalidPassTokenException.class, () -> service.verify(null, VISIT_ID));
+		assertThrows(InvalidPassTokenException.class, () -> service.verify("", VISIT_ID));
+		assertThrows(InvalidPassTokenException.class, () -> service.verify("v1.onlytwo", VISIT_ID));
+		assertThrows(InvalidPassTokenException.class, () -> service.verify("v1.a.b.c", VISIT_ID));
+		assertThrows(
+			InvalidPassTokenException.class,
+			() -> service.verify(token.replaceFirst("^v1", "v2"), VISIT_ID));
+	}
+
+	@Test
+	void rejectsATokenSignedWithADifferentSecret()
+	{
+		// given
+		PassTokenService issuer = new PassTokenService(SECRET, Duration.ofHours(1), NOW);
+		PassTokenService verifier = new PassTokenService(
+			"another-secret-with-at-least-32-characters", Duration.ofHours(1), NOW);
+
+		// when & then
+		assertThrows(InvalidPassTokenException.class, () -> verifier.verify(issuer.issue(VISIT_ID), VISIT_ID));
+	}
+
+	@Test
+	void refusesToIssueWithoutAPositiveTimeToLive()
+	{
+		// given
+		PassTokenService zero = new PassTokenService(SECRET, Duration.ZERO, NOW);
+		PassTokenService negative = new PassTokenService(SECRET, Duration.ofMinutes(-1), NOW);
+
+		// when & then
+		assertThrows(IllegalStateException.class, () -> zero.issue(VISIT_ID));
+		assertThrows(IllegalStateException.class, () -> negative.issue(VISIT_ID));
+	}
+
+	@Test
+	void refusesToIssueWithATooShortSecret()
+	{
+		// given
+		PassTokenService service = new PassTokenService("too-short", Duration.ofHours(1), NOW);
+
+		// when & then
+		assertThrows(IllegalStateException.class, () -> service.issue(VISIT_ID));
+	}
+
+	@Test
 	void rejectsAnExpiredToken()
 	{
 		PassTokenService issuer = new PassTokenService(SECRET, Duration.ofMinutes(5), NOW);
