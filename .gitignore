@@ -1,0 +1,52 @@
+# Operating-system files
+.DS_Store
+Thumbs.db
+
+# IDE and editor metadata
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+*.swp
+*.swo
+*~
+
+# Local environment and secret files
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.jks
+*.key
+*.p12
+
+# Java, Maven, and Quarkus outputs
+**/target/
+**/.quarkus/
+*.class
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+release.properties
+.flattened-pom.xml
+
+# JavaScript and frontend outputs
+**/node_modules/
+**/dist/
+**/build/
+**/.next/
+**/.nuxt/
+**/coverage/
+*.tsbuildinfo
+
+# Logs, caches, and temporary files
+*.log
+*.tmp
+*.temp
+*.cache
+*.orig
+*.rej
+
+# Local Docker Compose customizations
+docker-compose.override.yml
