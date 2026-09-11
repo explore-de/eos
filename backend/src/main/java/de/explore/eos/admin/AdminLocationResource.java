@@ -1,9 +1,12 @@
 package de.explore.eos.admin;
 
+import java.net.URI;
 import java.util.UUID;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
@@ -39,27 +42,24 @@ public class AdminLocationResource
 	@Path("/{locationId}")
 	public Response get(@PathParam("locationId") UUID locationId)
 	{
-		return noStore(Response.ok(find(locationId))).build();
+		return noStore(Response.ok(findOrThrow(locationId))).build();
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response create(LocationRequest request, @Context UriInfo uriInfo)
+	public Response create(@Valid @NotNull LocationRequest request, @Context UriInfo uriInfo)
 	{
-		AdminLocation location = repository.createLocation(AdminApiValidation.validate(request));
-		return noStore(Response.created(uriInfo.getAbsolutePathBuilder().path(location.id().toString()).build()))
-			.entity(location)
-			.build();
+		AdminLocation location = repository.createLocation(request);
+		return Response.created(locationUri(uriInfo, location.id())).entity(location).build();
 	}
 
 	@PUT
 	@Path("/{locationId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response update(@PathParam("locationId") UUID locationId, LocationRequest request)
+	public Response update(@PathParam("locationId") UUID locationId, @Valid @NotNull LocationRequest request)
 	{
-		AdminLocation location = repository.updateLocation(locationId, AdminApiValidation.validate(request))
-			.orElseThrow(NotFoundException::new);
-		return noStore(Response.ok(location)).build();
+		AdminLocation location = repository.updateLocation(locationId, request).orElseThrow(NotFoundException::new);
+		return Response.ok(location).build();
 	}
 
 	@DELETE
@@ -80,9 +80,14 @@ public class AdminLocationResource
 		}
 	}
 
-	private AdminLocation find(UUID locationId)
+	private AdminLocation findOrThrow(UUID locationId)
 	{
 		return repository.findLocation(locationId).orElseThrow(NotFoundException::new);
+	}
+
+	private static URI locationUri(UriInfo uriInfo, UUID locationId)
+	{
+		return uriInfo.getAbsolutePathBuilder().path(locationId.toString()).build();
 	}
 
 	private static Response.ResponseBuilder noStore(Response.ResponseBuilder response)

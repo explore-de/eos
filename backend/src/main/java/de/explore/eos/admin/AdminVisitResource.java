@@ -1,10 +1,15 @@
 package de.explore.eos.admin;
 
+import java.net.URI;
 import java.time.LocalDate;
 import java.util.UUID;
 
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
@@ -36,37 +41,29 @@ public class AdminVisitResource
 	@GET
 	public Response list(
 		@QueryParam("date") LocalDate date,
-		@QueryParam("status") String status,
+		@QueryParam("status") VisitStatus status,
 		@QueryParam("locationId") UUID locationId,
-		@DefaultValue("50") @QueryParam("limit") int limit,
-		@DefaultValue("0") @QueryParam("offset") int offset)
+		@DefaultValue("50") @QueryParam("limit") @Min(1) @Max(200) int limit,
+		@DefaultValue("0") @QueryParam("offset") @Min(0) int offset)
 	{
-		var visits = repository.listVisits(
-			date,
-			AdminApiValidation.parseStatus(status),
-			locationId,
-			AdminApiValidation.validateLimit(limit),
-			AdminApiValidation.validateOffset(offset));
-		return noStore(Response.ok(visits)).build();
+		return noStore(Response.ok(repository.listVisits(date, status, locationId, limit, offset))).build();
 	}
 
 	@GET
 	@Path("/{visitId}")
 	public Response get(@PathParam("visitId") UUID visitId)
 	{
-		return noStore(Response.ok(find(visitId))).build();
+		return noStore(Response.ok(findOrThrow(visitId))).build();
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response create(VisitRequest request, @Context UriInfo uriInfo)
+	public Response create(@Valid @NotNull VisitRequest request, @Context UriInfo uriInfo)
 	{
 		try
 		{
-			AdminVisit visit = repository.createVisit(AdminApiValidation.validate(request));
-			return noStore(Response.created(uriInfo.getAbsolutePathBuilder().path(visit.id().toString()).build()))
-				.entity(visit)
-				.build();
+			AdminVisit visit = repository.createVisit(request);
+			return Response.created(visitUri(uriInfo, visit.id())).entity(visit).build();
 		}
 		catch (UnknownLocationException exception)
 		{
@@ -77,13 +74,12 @@ public class AdminVisitResource
 	@PUT
 	@Path("/{visitId}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response update(@PathParam("visitId") UUID visitId, VisitRequest request)
+	public Response update(@PathParam("visitId") UUID visitId, @Valid @NotNull VisitRequest request)
 	{
 		try
 		{
-			AdminVisit visit = repository.updateVisit(visitId, AdminApiValidation.validate(request))
-				.orElseThrow(NotFoundException::new);
-			return noStore(Response.ok(visit)).build();
+			AdminVisit visit = repository.updateVisit(visitId, request).orElseThrow(NotFoundException::new);
+			return Response.ok(visit).build();
 		}
 		catch (UnknownLocationException exception)
 		{
@@ -95,13 +91,13 @@ public class AdminVisitResource
 	@Path("/{visitId}/check-out")
 	public Response checkOut(@PathParam("visitId") UUID visitId)
 	{
-		AdminVisit current = find(visitId);
+		AdminVisit current = findOrThrow(visitId);
 		if (current.status() == VisitStatus.CANCELLED)
 		{
 			throw new WebApplicationException("A cancelled visit cannot be checked out", Response.Status.CONFLICT);
 		}
 		AdminVisit checkedOut = repository.checkOutVisit(visitId).orElseThrow(NotFoundException::new);
-		return noStore(Response.ok(checkedOut)).build();
+		return Response.ok(checkedOut).build();
 	}
 
 	@DELETE
@@ -115,9 +111,14 @@ public class AdminVisitResource
 		return Response.noContent().build();
 	}
 
-	private AdminVisit find(UUID visitId)
+	private AdminVisit findOrThrow(UUID visitId)
 	{
 		return repository.findVisit(visitId).orElseThrow(NotFoundException::new);
+	}
+
+	private static URI visitUri(UriInfo uriInfo, UUID visitId)
+	{
+		return uriInfo.getAbsolutePathBuilder().path(visitId.toString()).build();
 	}
 
 	private static BadRequestException invalidLocation()

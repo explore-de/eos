@@ -52,7 +52,6 @@ class AdminApiTest
 			.post("/api/v1/admin/locations")
 			.then()
 			.statusCode(201)
-			.header("Cache-Control", "no-store")
 			.body("id", notNullValue())
 			.extract()
 			.path("id");
@@ -83,6 +82,7 @@ class AdminApiTest
 			.get("/api/v1/admin/visits")
 			.then()
 			.statusCode(200)
+			.header("Cache-Control", "no-store")
 			.body("id", hasItem(visitId));
 
 		given()
