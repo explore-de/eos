@@ -1,0 +1,17 @@
+.eos-visits-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-3);
+}
+
+.eos-visits-table {
+  overflow-x: auto;
+}
+
+.eos-visits-table .MuiTableCell-root {
+  padding-block: var(--eos-space-3);
+}
+
+.eos-visits-table .MuiTableBody-root .MuiTableRow-root:hover {
+  background: var(--eos-surface-muted);
+}

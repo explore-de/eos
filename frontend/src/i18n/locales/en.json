@@ -1,0 +1,157 @@
+{
+  "app": {
+    "title": "EOS Visitor Management",
+    "adminTitle": "EOS Administration"
+  },
+  "nav": {
+    "visits": "Visits",
+    "onSite": "On site",
+    "locations": "Locations",
+    "checkIn": "Check in",
+    "menu": "Open menu"
+  },
+  "language": {
+    "label": "Language",
+    "de": "German",
+    "en": "English"
+  },
+  "common": {
+    "loading": "Loading …",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search",
+    "reset": "Reset filters",
+    "actions": "Actions",
+    "none": "—",
+    "retry": "Retry",
+    "download": "Download",
+    "print": "Print",
+    "refresh": "Refresh",
+    "rowsPerPage": "Rows per page",
+    "optional": "optional"
+  },
+  "visit": {
+    "status": {
+      "label": "Status",
+      "EXPECTED": "Expected",
+      "ON_SITE": "On site",
+      "CHECKED_OUT": "Checked out"
+    },
+    "field": {
+      "visitorName": "Name",
+      "visitorCompany": "Company",
+      "visitDate": "Date",
+      "purpose": "Purpose",
+      "hostName": "Host",
+      "email": "Email",
+      "phone": "Phone",
+      "checkInAt": "Checked in",
+      "checkOutAt": "Checked out",
+      "location": "Location"
+    }
+  },
+  "visitor": {
+    "scan": {
+      "heading": "Scan the QR code",
+      "body": "This page is opened through the QR code at reception. Please scan the code at your location."
+    },
+    "checkIn": {
+      "heading": "Register your visit",
+      "intro": "Enter your details and you will get a digital visitor badge.",
+      "contactHint": "Email or phone is enough.",
+      "privacyConsent": "I consent to the storage of my contact data.",
+      "privacyNotice": "Privacy notice",
+      "submit": "Check in",
+      "success": "Checked in. Your visitor badge is ready.",
+      "openBadge": "Open visitor badge",
+      "conflict": "An open visit already exists for you at this location.",
+      "rateLimited": "Too many attempts. Please wait a moment."
+    },
+    "badge": {
+      "heading": "Visitor badge",
+      "missingToken": "This badge cannot be opened on this device. Please see reception.",
+      "checkOut": "Check out",
+      "checkedOut": "You are checked out. Thank you for your visit.",
+      "showAtReception": "Please show this at reception."
+    }
+  },
+  "admin": {
+    "identity": {
+      "signedInAs": "Signed in as",
+      "signOut": "Sign out",
+      "account": "Account"
+    },
+    "visits": {
+      "heading": "Visits",
+      "empty": "No visits yet.",
+      "create": "Pre-register visit",
+      "createHeading": "Pre-register a visitor",
+      "editHeading": "Edit visit",
+      "deleteHeading": "Delete visit",
+      "deleteBody": "The visit of {{name}} will be deleted permanently (GDPR erasure).",
+      "checkIn": "Check in",
+      "checkOut": "Check out",
+      "pass": "Visitor pass",
+      "filter": {
+        "heading": "Filters",
+        "query": "Name, company, host",
+        "location": "Location",
+        "allLocations": "All locations",
+        "status": "Status",
+        "from": "From",
+        "to": "To"
+      },
+      "total": "{{count}} visit",
+      "total_other": "{{count}} visits"
+    },
+    "onSite": {
+      "heading": "On site",
+      "subtitle": "Evacuation list — everyone currently checked in.",
+      "empty": "Nobody is checked in right now.",
+      "count": "{{count}} person on site",
+      "count_other": "{{count}} people on site"
+    },
+    "locations": {
+      "heading": "Locations",
+      "empty": "No locations yet.",
+      "create": "Create location",
+      "createHeading": "Create location",
+      "editHeading": "Edit location",
+      "deactivateHeading": "Deactivate location",
+      "deactivateBody": "{{name}} will be deactivated and stops accepting check-ins.",
+      "qr": "QR code",
+      "qrHeading": "QR code for {{name}}",
+      "qrHint": "Put this up at reception. The code opens the check-in form for this location.",
+      "onSiteCount": "on site",
+      "inactive": "Inactive",
+      "field": {
+        "companyName": "Company",
+        "street": "Street",
+        "postalCode": "Postal code",
+        "city": "City",
+        "country": "Country",
+        "additionalInfo": "Additional info shown on the check-in form",
+        "hostRequired": "Host is a required field",
+        "privacyNoticeUrl": "Privacy notice URL",
+        "retentionDays": "Retention (days)",
+        "active": "Active"
+      }
+    },
+    "logout": {
+      "heading": "You are signed out.",
+      "body": "Your session on this device has ended. Close the window or sign in again.",
+      "signIn": "Sign in again"
+    }
+  },
+  "error": {
+    "generic": "Something went wrong.",
+    "notFound": "Not found.",
+    "unauthorized": "Sign-in required.",
+    "forbidden": "Not allowed.",
+    "loadFailed": "Could not load the data."
+  }
+}

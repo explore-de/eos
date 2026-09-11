@@ -1,0 +1,14 @@
+.eos-visit-actions {
+  display: flex;
+  gap: var(--eos-space-1);
+  justify-content: flex-end;
+}
+
+.eos-visit-actions .MuiIconButton-root {
+  border-radius: var(--eos-radius-sm);
+}
+
+.eos-visit-actions .MuiIconButton-root:hover {
+  background: var(--eos-surface-muted);
+  color: var(--eos-palette-primary-main);
+}

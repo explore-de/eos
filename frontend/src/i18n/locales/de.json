@@ -1,0 +1,157 @@
+{
+  "app": {
+    "title": "EOS Besucherverwaltung",
+    "adminTitle": "EOS Verwaltung"
+  },
+  "nav": {
+    "visits": "Besuche",
+    "onSite": "Vor Ort",
+    "locations": "Standorte",
+    "checkIn": "Anmelden",
+    "menu": "Menü öffnen"
+  },
+  "language": {
+    "label": "Sprache",
+    "de": "Deutsch",
+    "en": "Englisch"
+  },
+  "common": {
+    "loading": "Wird geladen …",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "close": "Schließen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Anlegen",
+    "search": "Suchen",
+    "reset": "Filter zurücksetzen",
+    "actions": "Aktionen",
+    "none": "—",
+    "retry": "Erneut versuchen",
+    "download": "Herunterladen",
+    "print": "Drucken",
+    "refresh": "Aktualisieren",
+    "rowsPerPage": "Zeilen pro Seite",
+    "optional": "optional"
+  },
+  "visit": {
+    "status": {
+      "label": "Status",
+      "EXPECTED": "Erwartet",
+      "ON_SITE": "Vor Ort",
+      "CHECKED_OUT": "Abgemeldet"
+    },
+    "field": {
+      "visitorName": "Name",
+      "visitorCompany": "Firma",
+      "visitDate": "Datum",
+      "purpose": "Anlass",
+      "hostName": "Ansprechpartner",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "checkInAt": "Angemeldet",
+      "checkOutAt": "Abgemeldet",
+      "location": "Standort"
+    }
+  },
+  "visitor": {
+    "scan": {
+      "heading": "QR-Code scannen",
+      "body": "Diese Seite wird über den QR-Code am Empfang geöffnet. Bitte scannen Sie den Code an Ihrem Standort."
+    },
+    "checkIn": {
+      "heading": "Besuch anmelden",
+      "intro": "Bitte tragen Sie Ihre Daten ein. Sie erhalten danach einen digitalen Besucherausweis.",
+      "contactHint": "E-Mail oder Telefon genügt.",
+      "privacyConsent": "Ich willige in die Speicherung meiner Kontaktdaten ein.",
+      "privacyNotice": "Datenschutzhinweis",
+      "submit": "Anmelden",
+      "success": "Angemeldet. Ihr Besucherausweis ist bereit.",
+      "openBadge": "Besucherausweis öffnen",
+      "conflict": "Für Sie ist an diesem Standort bereits ein offener Besuch erfasst.",
+      "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment."
+    },
+    "badge": {
+      "heading": "Besucherausweis",
+      "missingToken": "Dieser Ausweis kann auf diesem Gerät nicht geöffnet werden. Bitte melden Sie sich am Empfang.",
+      "checkOut": "Abmelden",
+      "checkedOut": "Sie sind abgemeldet. Vielen Dank für Ihren Besuch.",
+      "showAtReception": "Bitte am Empfang vorzeigen."
+    }
+  },
+  "admin": {
+    "identity": {
+      "signedInAs": "Angemeldet als",
+      "signOut": "Abmelden",
+      "account": "Konto"
+    },
+    "visits": {
+      "heading": "Besuche",
+      "empty": "Keine Besuche vorhanden.",
+      "create": "Besuch vorerfassen",
+      "createHeading": "Besucher vorerfassen",
+      "editHeading": "Besuch bearbeiten",
+      "deleteHeading": "Besuch löschen",
+      "deleteBody": "Der Besuch von {{name}} wird endgültig gelöscht (DSGVO-Löschung).",
+      "checkIn": "Anmelden",
+      "checkOut": "Abmelden",
+      "pass": "Besucherpass",
+      "filter": {
+        "heading": "Filter",
+        "query": "Name, Firma, Ansprechpartner",
+        "location": "Standort",
+        "allLocations": "Alle Standorte",
+        "status": "Status",
+        "from": "Von",
+        "to": "Bis"
+      },
+      "total": "{{count}} Besuch",
+      "total_other": "{{count}} Besuche"
+    },
+    "onSite": {
+      "heading": "Vor Ort",
+      "subtitle": "Evakuierungsliste — alle angemeldeten Besucher.",
+      "empty": "Aktuell ist niemand angemeldet.",
+      "count": "{{count}} Person vor Ort",
+      "count_other": "{{count}} Personen vor Ort"
+    },
+    "locations": {
+      "heading": "Standorte",
+      "empty": "Keine Standorte vorhanden.",
+      "create": "Standort anlegen",
+      "createHeading": "Standort anlegen",
+      "editHeading": "Standort bearbeiten",
+      "deactivateHeading": "Standort deaktivieren",
+      "deactivateBody": "{{name}} wird deaktiviert und nimmt keine Anmeldungen mehr an.",
+      "qr": "QR-Code",
+      "qrHeading": "QR-Code für {{name}}",
+      "qrHint": "Am Empfang aushängen. Der Code öffnet das Anmeldeformular dieses Standorts.",
+      "onSiteCount": "vor Ort",
+      "inactive": "Inaktiv",
+      "field": {
+        "companyName": "Firma",
+        "street": "Straße",
+        "postalCode": "PLZ",
+        "city": "Ort",
+        "country": "Land",
+        "additionalInfo": "Zusatzinfo für das Anmeldeformular",
+        "hostRequired": "Ansprechpartner ist Pflichtfeld",
+        "privacyNoticeUrl": "Link zum Datenschutzhinweis",
+        "retentionDays": "Aufbewahrung (Tage)",
+        "active": "Aktiv"
+      }
+    },
+    "logout": {
+      "heading": "Sie sind abgemeldet.",
+      "body": "Ihre Sitzung wurde auf diesem Gerät beendet. Schließen Sie das Fenster oder melden Sie sich erneut an.",
+      "signIn": "Erneut anmelden"
+    }
+  },
+  "error": {
+    "generic": "Es ist ein Fehler aufgetreten.",
+    "notFound": "Nicht gefunden.",
+    "unauthorized": "Anmeldung erforderlich.",
+    "forbidden": "Keine Berechtigung.",
+    "loadFailed": "Daten konnten nicht geladen werden."
+  }
+}

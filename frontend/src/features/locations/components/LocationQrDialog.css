@@ -1,0 +1,19 @@
+.eos-qr__frame {
+  display: flex;
+  justify-content: center;
+  padding: var(--eos-space-4);
+  border-radius: var(--eos-radius-lg);
+  background: var(--eos-surface-muted);
+}
+
+.eos-qr__image {
+  width: 100%;
+  max-width: 320px;
+  image-rendering: pixelated;
+  border-radius: var(--eos-radius-sm);
+  background: #fff;
+}
+
+.eos-qr__hint {
+  margin-top: var(--eos-space-3);
+}

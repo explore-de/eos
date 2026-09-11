@@ -1,0 +1,41 @@
+.eos-form-dialog__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-4);
+  padding-top: var(--eos-space-2);
+}
+
+.eos-form-dialog__row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-4);
+}
+
+.eos-form-dialog__field--narrow {
+  max-width: 100%;
+}
+
+.eos-form-dialog .MuiDialogActions-root {
+  padding: var(--eos-space-3) var(--eos-space-5) var(--eos-space-4);
+  border-top: var(--eos-border-subtle);
+}
+
+@media (min-width: 600px) {
+  .eos-form-dialog__row {
+    flex-direction: row;
+  }
+
+  .eos-form-dialog__field--postal {
+    width: 160px;
+    flex: none;
+  }
+
+  .eos-form-dialog__field--country {
+    width: 110px;
+    flex: none;
+  }
+
+  .eos-form-dialog__field--narrow {
+    max-width: 220px;
+  }
+}

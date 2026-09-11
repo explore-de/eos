@@ -1,0 +1,34 @@
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  background:
+    radial-gradient(
+      70% 45% at 12% 0%,
+      color-mix(in srgb, var(--eos-palette-primary-main) 26%, transparent),
+      transparent 70%
+    ),
+    radial-gradient(50% 40% at 95% 12%, rgb(90 60 200 / 24%), transparent 72%),
+    var(--eos-surface-page);
+  background-attachment: fixed;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--eos-focus-ring);
+}
+
+@media print {
+  .eos-no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #fff;
+  }
+}

@@ -1,0 +1,49 @@
+.eos-badge {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-4);
+}
+
+.eos-badge__card {
+  padding: var(--eos-space-5);
+  background-image: radial-gradient(
+    120% 260px at 15% 0%,
+    color-mix(in srgb, var(--eos-palette-primary-main) 22%, transparent),
+    transparent 68%
+  );
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-4);
+  box-shadow: var(--eos-shadow-raised);
+}
+
+.eos-badge__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--eos-space-2);
+}
+
+.eos-badge__name {
+  font-weight: 750;
+  line-height: 1.1;
+}
+
+.eos-badge__fields {
+  display: grid;
+  gap: var(--eos-space-3);
+}
+
+.eos-badge__hint {
+  text-align: center;
+}
+
+.eos-badge__spinner {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--eos-space-7);
+}
+
+.eos-badge__action {
+  padding-block: var(--eos-space-3);
+}

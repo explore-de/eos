@@ -1,0 +1,41 @@
+.eos-visitor {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--eos-surface-page);
+}
+
+.eos-visitor__bar {
+  background: var(--eos-surface-bar);
+  backdrop-filter: var(--eos-bar-blur);
+  border-bottom: 1px solid var(--eos-hairline);
+}
+
+.eos-visitor__toolbar {
+  gap: var(--eos-space-2);
+  min-height: 56px;
+}
+
+.eos-visitor__brand {
+  flex-grow: 1;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.eos-visitor__brand::before {
+  content: '';
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: var(--eos-space-2);
+  border-radius: var(--eos-radius-pill);
+  background: var(--eos-palette-primary-main);
+  vertical-align: baseline;
+}
+
+.eos-visitor__main {
+  flex-grow: 1;
+  width: min(100%, var(--eos-layout-reading));
+  margin-inline: auto;
+  padding: var(--eos-space-5) var(--eos-space-4) var(--eos-space-7);
+}
