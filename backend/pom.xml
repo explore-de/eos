@@ -177,6 +177,8 @@
                 <quarkus.package.jar.enabled>false</quarkus.package.jar.enabled>
                 <skipITs>false</skipITs>
                 <quarkus.native.enabled>true</quarkus.native.enabled>
+                <quarkus.native.container-build>true</quarkus.native.container-build>
+                <quarkus.native.builder-image>quay.io/quarkus/ubi10-quarkus-mandrel-builder-image:25.0.4.1-Final-java25-2026-09-06</quarkus.native.builder-image>
             </properties>
         </profile>
     </profiles>
