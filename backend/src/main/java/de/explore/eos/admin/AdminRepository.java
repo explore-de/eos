@@ -124,6 +124,25 @@ public class AdminRepository
 		}
 	}
 
+	public int countVisitsAt(UUID locationId)
+	{
+		try (Connection connection = dataSource.getConnection();
+			PreparedStatement statement = connection
+				.prepareStatement("SELECT count(*) FROM visits WHERE location_id = ?"))
+		{
+			statement.setObject(1, locationId);
+			try (ResultSet result = statement.executeQuery())
+			{
+				result.next();
+				return result.getInt(1);
+			}
+		}
+		catch (SQLException exception)
+		{
+			throw persistenceFailure("count visits at location", exception);
+		}
+	}
+
 	@Transactional
 	public boolean deleteLocation(UUID id)
 	{
@@ -135,6 +154,10 @@ public class AdminRepository
 		}
 		catch (SQLException exception)
 		{
+			// Postgres reports 23503 for every FK violation, H2 only for "child
+			// exists";
+			// AdminLocationService.ensureNotInUse front-runs this, so the gap
+			// is unreachable.
 			if ("23503".equals(exception.getSQLState()))
 			{
 				throw new LocationInUseException();

@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.security.TestSecurity;
@@ -163,6 +164,30 @@ class AdminApiValidationTest
 			.statusCode(400)
 			.contentType("application/problem+json")
 			.body("errors[0].field", equalTo("offset"));
+	}
+
+	@Test
+	@TestSecurity(user = "admin", roles = "eos-admin")
+	void reportsAnUnknownLocationAsAFieldError()
+	{
+		// given
+		Map<String, Object> request = new HashMap<>(Map.of(
+			"visitorName", "Ada Lovelace",
+			"visitDate", LocalDate.of(2026, 9, 15).toString(),
+			"purpose", "Project review",
+			"hostName", "Grace Hopper",
+			"locationId", UUID.randomUUID().toString()));
+
+		// when & then
+		given()
+			.contentType("application/json")
+			.body(request)
+			.when()
+			.post("/api/v1/admin/visits")
+			.then()
+			.statusCode(400)
+			.contentType("application/problem+json")
+			.body("errors[0].field", equalTo("locationId"));
 	}
 
 	private String createLocation()

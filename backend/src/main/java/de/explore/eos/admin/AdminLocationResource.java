@@ -10,19 +10,15 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
 import jakarta.ws.rs.GET;
-import jakarta.ws.rs.NotFoundException;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.Produces;
-import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.UriInfo;
-
-import de.explore.eos.admin.AdminRepository.LocationInUseException;
 
 @Path("/api/v1/admin/locations")
 @RolesAllowed("eos-admin")
@@ -30,26 +26,26 @@ import de.explore.eos.admin.AdminRepository.LocationInUseException;
 public class AdminLocationResource
 {
 	@Inject
-	AdminRepository repository;
+	AdminLocationService locations;
 
 	@GET
 	public Response list()
 	{
-		return noStore(Response.ok(repository.listLocations())).build();
+		return noStore(Response.ok(locations.list())).build();
 	}
 
 	@GET
 	@Path("/{locationId}")
 	public Response get(@PathParam("locationId") UUID locationId)
 	{
-		return noStore(Response.ok(findOrThrow(locationId))).build();
+		return noStore(Response.ok(locations.findOrThrow(locationId))).build();
 	}
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response create(@Valid @NotNull LocationRequest request, @Context UriInfo uriInfo)
 	{
-		AdminLocation location = repository.createLocation(request);
+		AdminLocation location = locations.create(request);
 		return Response.created(locationUri(uriInfo, location.id())).entity(location).build();
 	}
 
@@ -58,31 +54,15 @@ public class AdminLocationResource
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response update(@PathParam("locationId") UUID locationId, @Valid @NotNull LocationRequest request)
 	{
-		AdminLocation location = repository.updateLocation(locationId, request).orElseThrow(NotFoundException::new);
-		return Response.ok(location).build();
+		return Response.ok(locations.update(locationId, request)).build();
 	}
 
 	@DELETE
 	@Path("/{locationId}")
 	public Response delete(@PathParam("locationId") UUID locationId)
 	{
-		try
-		{
-			if (!repository.deleteLocation(locationId))
-			{
-				throw new NotFoundException();
-			}
-			return Response.noContent().build();
-		}
-		catch (LocationInUseException exception)
-		{
-			throw new WebApplicationException("Location is assigned to one or more visits", Response.Status.CONFLICT);
-		}
-	}
-
-	private AdminLocation findOrThrow(UUID locationId)
-	{
-		return repository.findLocation(locationId).orElseThrow(NotFoundException::new);
+		locations.delete(locationId);
+		return Response.noContent().build();
 	}
 
 	private static URI locationUri(UriInfo uriInfo, UUID locationId)

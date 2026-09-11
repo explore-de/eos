@@ -97,7 +97,9 @@ class AdminApiTest
 			.when()
 			.delete("/api/v1/admin/locations/{locationId}", locationId)
 			.then()
-			.statusCode(409);
+			.statusCode(409)
+			.contentType("application/problem+json")
+			.body("status", equalTo(409));
 
 		given()
 			.when()
