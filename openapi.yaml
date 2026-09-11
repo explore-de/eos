@@ -1,0 +1,728 @@
+openapi: 3.1.0
+info:
+  title: EOS Visitor Management API
+  version: 0.1.0
+  description: |
+    Backend for the EOS visitor management system.
+
+    Two security zones:
+      * `/api/v1/public/**` — reached by visitors from the web app opened via the
+        location QR code. No OIDC. A visit is authorized by the opaque
+        `visitToken` handed out at registration.
+      * everything else — admin panel, OIDC bearer token, role `eos-admin`.
+servers:
+  - url: /
+tags:
+  - name: Visitor Self-Service
+    description: Unauthenticated endpoints used by the visitor web app.
+  - name: Visits
+    description: Admin panel visit management.
+  - name: Locations
+    description: Admin panel location management.
+  - name: Identity
+
+paths:
+  /api/v1/public/locations/{locationId}:
+    get:
+      tags: [Visitor Self-Service]
+      summary: Location shown on the registration form
+      description: Target of the location QR code. Returns only the public subset of the location.
+      operationId: getPublicLocation
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '200':
+          description: Location found
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PublicLocation' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/public/visits:
+    post:
+      tags: [Visitor Self-Service]
+      summary: Visitor self check-in
+      description: |
+        Creates a visit in state `ON_SITE` and returns the credential backing the
+        digital badge. The `visitToken` is returned exactly once — the web app
+        persists it locally (e.g. in a badge URL) to reopen or check out the visit.
+      operationId: selfCheckIn
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SelfCheckInRequest' }
+      responses:
+        '201':
+          description: Visit created
+          headers:
+            Location:
+              description: Badge URL of the created visit
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VisitCredential' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: An open visit already exists for this visitor at this location
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+        '429': { $ref: '#/components/responses/TooManyRequests' }
+
+  /api/v1/public/visits/{visitId}:
+    get:
+      tags: [Visitor Self-Service]
+      summary: Digital badge state
+      operationId: getOwnVisit
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+        - $ref: '#/components/parameters/VisitTokenHeader'
+      responses:
+        '200':
+          description: Badge data
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VisitBadge' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '410':
+          description: Visit purged by retention policy
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /api/v1/public/visits/{visitId}/checkout:
+    post:
+      tags: [Visitor Self-Service]
+      summary: Visitor self check-out (Abmeldung)
+      operationId: selfCheckOut
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+        - $ref: '#/components/parameters/VisitTokenHeader'
+      responses:
+        '200':
+          description: Visit checked out
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VisitBadge' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Visit is not checked in
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /api/v1/visits:
+    get:
+      tags: [Visits]
+      summary: List and search visits
+      description: |
+        Default sort is `checkInAt` descending. `status=ON_SITE` without paging
+        parameters is the evacuation list.
+      operationId: listVisits
+      parameters:
+        - name: locationId
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema:
+            type: array
+            items: { $ref: '#/components/schemas/VisitStatus' }
+          style: form
+          explode: true
+        - name: from
+          in: query
+          description: Inclusive lower bound on `visitDate`.
+          schema: { type: string, format: date }
+        - name: to
+          in: query
+          description: Inclusive upper bound on `visitDate`.
+          schema: { type: string, format: date }
+        - name: q
+          in: query
+          description: Free text over visitor name, company and host.
+          schema: { type: string, maxLength: 100 }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 0, default: 0 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 200, default: 50 }
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [checkInAt, -checkInAt, visitDate, -visitDate, visitorName, -visitorName]
+            default: -checkInAt
+      responses:
+        '200':
+          description: Page of visits
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VisitPage' }
+            text/csv:
+              schema: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Visits]
+      summary: Pre-register a visitor
+      description: Creates a visit in state `EXPECTED`. No `visitToken` is issued.
+      operationId: createVisit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VisitCreateRequest' }
+      responses:
+        '201':
+          description: Visit created
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/visits/{visitId}:
+    get:
+      tags: [Visits]
+      summary: Get one visit
+      operationId: getVisit
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+      responses:
+        '200':
+          description: Visit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      tags: [Visits]
+      summary: Correct visit data
+      operationId: updateVisit
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema: { $ref: '#/components/schemas/VisitUpdateRequest' }
+      responses:
+        '200':
+          description: Updated visit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    delete:
+      tags: [Visits]
+      summary: Delete a visit (GDPR erasure)
+      operationId: deleteVisit
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+      responses:
+        '204': { description: Deleted }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/visits/{visitId}/checkin:
+    post:
+      tags: [Visits]
+      summary: Check in a pre-registered visitor at the desk
+      operationId: checkInVisit
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+      responses:
+        '200':
+          description: Visit checked in
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Visit is not in state `EXPECTED`
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /api/v1/visits/{visitId}/checkout:
+    post:
+      tags: [Visits]
+      summary: Check out a visitor
+      operationId: checkOutVisit
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+      responses:
+        '200':
+          description: Visit checked out
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Visit' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Visit is not checked in
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /api/v1/visits/{visitId}/pass:
+    get:
+      tags: [Visits]
+      summary: Printable visitor pass (Besucherpass)
+      operationId: getVisitorPass
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+      responses:
+        '200':
+          description: PDF pass
+          content:
+            application/pdf:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/locations:
+    get:
+      tags: [Locations]
+      summary: List locations
+      operationId: listLocations
+      parameters:
+        - name: active
+          in: query
+          schema: { type: boolean }
+      responses:
+        '200':
+          description: Locations
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Location' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    post:
+      tags: [Locations]
+      summary: Create a location
+      operationId: createLocation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LocationRequest' }
+      responses:
+        '201':
+          description: Location created
+          headers:
+            Location:
+              schema: { type: string, format: uri }
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Location' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/v1/locations/{locationId}:
+    get:
+      tags: [Locations]
+      summary: Get one location
+      operationId: getLocation
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '200':
+          description: Location
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Location' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    put:
+      tags: [Locations]
+      summary: Replace a location
+      operationId: replaceLocation
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LocationRequest' }
+      responses:
+        '200':
+          description: Updated location
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Location' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '412': { $ref: '#/components/responses/PreconditionFailed' }
+    delete:
+      tags: [Locations]
+      summary: Deactivate a location
+      description: Soft delete — visits keep referencing it. Fails while visitors are on site.
+      operationId: deleteLocation
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+      responses:
+        '204': { description: Deactivated }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Visitors still on site at this location
+          content:
+            application/problem+json:
+              schema: { $ref: '#/components/schemas/Problem' }
+
+  /api/v1/locations/{locationId}/qr.png:
+    get:
+      tags: [Locations]
+      summary: Location QR code
+      description: QR code pointing at the visitor web app registration form for this location.
+      operationId: getLocationQr
+      parameters:
+        - $ref: '#/components/parameters/LocationId'
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 64, maximum: 1024, default: 512 }
+      responses:
+        '200':
+          description: PNG QR code
+          content:
+            image/png:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/me:
+    get:
+      tags: [Identity]
+      summary: Current admin identity
+      description: Resolved from the OIDC token, used by the admin panel to render the session.
+      operationId: getCurrentUser
+      responses:
+        '200':
+          description: Identity
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CurrentUser' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    oidc:
+      type: openIdConnect
+      openIdConnectUrl: https://example.invalid/realms/eos/.well-known/openid-configuration
+
+  parameters:
+    VisitId:
+      name: visitId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    LocationId:
+      name: locationId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    VisitTokenHeader:
+      name: X-Visit-Token
+      in: header
+      required: true
+      description: Opaque token returned by `selfCheckIn`.
+      schema: { type: string, minLength: 32, maxLength: 128 }
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: ETag of the version being modified, for optimistic locking.
+      schema: { type: string }
+
+  responses:
+    BadRequest:
+      description: Validation failed
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Unauthorized:
+      description: Missing or invalid credentials
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    Forbidden:
+      description: Authenticated but lacking the required role
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionFailed:
+      description: ETag mismatch — the resource changed in the meantime
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+    TooManyRequests:
+      description: Rate limit exceeded
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
+
+  schemas:
+    VisitStatus:
+      type: string
+      enum: [EXPECTED, ON_SITE, CHECKED_OUT]
+      description: |
+        * `EXPECTED` — pre-registered by an admin, not yet on site
+        * `ON_SITE` — checked in, not checked out (`abgemeldet = false`)
+        * `CHECKED_OUT` — checked out (`abgemeldet = true`)
+
+    ContactInfo:
+      type: object
+      description: At least one of `email` or `phone` is required.
+      properties:
+        email: { type: string, format: email, maxLength: 254 }
+        phone: { type: string, maxLength: 32, pattern: '^[+0-9 ()/-]{5,32}$' }
+      anyOf:
+        - required: [email]
+        - required: [phone]
+
+    Address:
+      type: object
+      required: [street, postalCode, city]
+      properties:
+        street: { type: string, maxLength: 120 }
+        postalCode: { type: string, maxLength: 12 }
+        city: { type: string, maxLength: 80 }
+        country:
+          type: string
+          description: ISO 3166-1 alpha-2.
+          pattern: '^[A-Z]{2}$'
+          default: DE
+
+    PublicLocation:
+      type: object
+      required: [id, companyName, address]
+      properties:
+        id: { type: string, format: uuid }
+        companyName: { type: string }
+        address: { $ref: '#/components/schemas/Address' }
+        additionalInfo:
+          type: string
+          description: Free text shown on the registration form (Zusatz Info).
+        hostRequired:
+          type: boolean
+          default: false
+        privacyNoticeUrl: { type: string, format: uri }
+
+    Location:
+      allOf:
+        - $ref: '#/components/schemas/PublicLocation'
+        - type: object
+          required: [active, createdAt]
+          properties:
+            active: { type: boolean }
+            retentionDays:
+              type: integer
+              minimum: 1
+              maximum: 3650
+              description: Days a checked-out visit is kept before purge.
+              default: 90
+            onSiteCount:
+              type: integer
+              readOnly: true
+            createdAt: { type: string, format: date-time }
+            updatedAt: { type: string, format: date-time }
+
+    LocationRequest:
+      type: object
+      required: [companyName, address]
+      properties:
+        companyName: { type: string, minLength: 1, maxLength: 120 }
+        address: { $ref: '#/components/schemas/Address' }
+        additionalInfo: { type: string, maxLength: 2000 }
+        hostRequired: { type: boolean, default: false }
+        privacyNoticeUrl: { type: string, format: uri }
+        active: { type: boolean, default: true }
+        retentionDays: { type: integer, minimum: 1, maximum: 3650, default: 90 }
+
+    Visit:
+      type: object
+      required: [id, locationId, visitorName, visitDate, purpose, status, contact, createdAt]
+      properties:
+        id: { type: string, format: uuid }
+        locationId: { type: string, format: uuid }
+        visitorName: { type: string, maxLength: 120 }
+        visitorCompany: { type: string, maxLength: 120 }
+        visitDate:
+          type: string
+          format: date
+          description: Day the visit is registered for (Datum).
+        purpose:
+          type: string
+          maxLength: 500
+          description: Reason for the visit (Anlass).
+        hostName:
+          type: string
+          maxLength: 120
+          description: Employee being visited.
+        contact: { $ref: '#/components/schemas/ContactInfo' }
+        status: { $ref: '#/components/schemas/VisitStatus' }
+        checkInAt: { type: ['string', 'null'], format: date-time }
+        checkOutAt: { type: ['string', 'null'], format: date-time }
+        selfRegistered: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        createdBy:
+          type: ['string', 'null']
+          description: Admin subject that created the visit; null for self-registration.
+        updatedAt: { type: string, format: date-time }
+
+    VisitBadge:
+      type: object
+      description: Visitor-facing projection — no admin or cross-visit data.
+      required: [id, visitorName, visitDate, status, location]
+      properties:
+        id: { type: string, format: uuid }
+        visitorName: { type: string }
+        visitorCompany: { type: string }
+        visitDate: { type: string, format: date }
+        purpose: { type: string }
+        hostName: { type: string }
+        status: { $ref: '#/components/schemas/VisitStatus' }
+        checkInAt: { type: ['string', 'null'], format: date-time }
+        checkOutAt: { type: ['string', 'null'], format: date-time }
+        location: { $ref: '#/components/schemas/PublicLocation' }
+
+    VisitCredential:
+      type: object
+      required: [visit, visitToken, badgeUrl]
+      properties:
+        visit: { $ref: '#/components/schemas/VisitBadge' }
+        visitToken:
+          type: string
+          description: Returned only here. Sent back as `X-Visit-Token`.
+        badgeUrl: { type: string, format: uri }
+
+    SelfCheckInRequest:
+      type: object
+      required: [locationId, visitorName, purpose, contact, privacyConsent]
+      properties:
+        locationId: { type: string, format: uuid }
+        visitorName: { type: string, minLength: 1, maxLength: 120 }
+        visitorCompany: { type: string, maxLength: 120 }
+        purpose: { type: string, minLength: 1, maxLength: 500 }
+        hostName: { type: string, maxLength: 120 }
+        contact: { $ref: '#/components/schemas/ContactInfo' }
+        privacyConsent:
+          type: boolean
+          const: true
+          description: Must be true — GDPR consent for storing the contact data.
+
+    VisitCreateRequest:
+      type: object
+      required: [locationId, visitorName, visitDate, purpose, contact]
+      properties:
+        locationId: { type: string, format: uuid }
+        visitorName: { type: string, minLength: 1, maxLength: 120 }
+        visitorCompany: { type: string, maxLength: 120 }
+        visitDate: { type: string, format: date }
+        purpose: { type: string, minLength: 1, maxLength: 500 }
+        hostName: { type: string, maxLength: 120 }
+        contact: { $ref: '#/components/schemas/ContactInfo' }
+
+    VisitUpdateRequest:
+      type: object
+      description: Merge patch. Only the listed fields are mutable; status changes go through the check-in/check-out endpoints.
+      properties:
+        visitorName: { type: string, minLength: 1, maxLength: 120 }
+        visitorCompany: { type: ['string', 'null'], maxLength: 120 }
+        visitDate: { type: string, format: date }
+        purpose: { type: string, minLength: 1, maxLength: 500 }
+        hostName: { type: ['string', 'null'], maxLength: 120 }
+        contact: { $ref: '#/components/schemas/ContactInfo' }
+
+    VisitPage:
+      type: object
+      required: [items, page, size, totalElements, totalPages]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Visit' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer, format: int64 }
+        totalPages: { type: integer }
+
+    CurrentUser:
+      type: object
+      required: [subject, roles]
+      properties:
+        subject: { type: string }
+        name: { type: string }
+        email: { type: string, format: email }
+        roles:
+          type: array
+          items: { type: string }
+        locationIds:
+          type: array
+          description: Locations this admin may manage; empty means all.
+          items: { type: string, format: uuid }
+
+    Problem:
+      type: object
+      description: RFC 9457 problem detail.
+      required: [type, title, status]
+      properties:
+        type: { type: string, format: uri, default: 'about:blank' }
+        title: { type: string }
+        status: { type: integer }
+        detail: { type: string }
+        instance: { type: string, format: uri }
+        errors:
+          type: array
+          description: Field-level validation failures.
+          items:
+            type: object
+            required: [field, message]
+            properties:
+              field: { type: string }
+              message: { type: string }
+
+security:
+  - oidc: []
