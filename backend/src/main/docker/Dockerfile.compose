@@ -5,7 +5,7 @@ COPY pom.xml ./
 COPY src/main/ src/main/
 RUN mvn -B -Dmaven.test.skip=true package
 
-FROM registry.access.redhat.com/ubi9/openjdk-25-runtime:1.24
+FROM registry.access.redhat.com/ubi10/openjdk-25-runtime:1.24
 
 ENV LANGUAGE='en_US:en'
 COPY --from=build --chown=185 /workspace/target/quarkus-app/lib/ /deployments/lib/
