@@ -1,0 +1,43 @@
+{
+  "realm": "eos",
+  "enabled": true,
+  "displayName": "EOS Visitor Management",
+  "roles": {
+    "realm": [
+      {
+        "name": "eos-admin",
+        "description": "May administer visits and verify visitor passes"
+      }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "eos-admin-panel",
+      "name": "EOS Admin Panel",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": ["http://localhost:3000/*"],
+      "webOrigins": ["http://localhost:3000"]
+    }
+  ],
+  "users": [
+    {
+      "username": "eos-admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "EOS",
+      "lastName": "Admin",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin-local-only",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["eos-admin"]
+    }
+  ]
+}
