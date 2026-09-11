@@ -12,7 +12,7 @@ import { useAdminToken } from './useAdminToken'
 
 export function RequireAdmin({ children }: { children: ReactNode }) {
   const { t } = useTranslation()
-  const auth = useAdminToken()
+  const { auth, tokenReady } = useAdminToken()
 
   const signIn = useCallback(() => void auth.signinRedirect(), [auth])
 
@@ -22,7 +22,7 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
     }
   }, [auth])
 
-  if (auth.isAuthenticated) {
+  if (auth.isAuthenticated && tokenReady) {
     return <>{children}</>
   }
 
