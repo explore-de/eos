@@ -141,6 +141,11 @@
       "heading": "Sie sind abgemeldet.",
       "body": "Ihre Sitzung wurde auf diesem Gerät beendet. Schließen Sie das Fenster oder melden Sie sich erneut an.",
       "signIn": "Erneut anmelden"
+    },
+    "signIn": {
+      "heading": "EOS Verwaltung",
+      "body": "Bitte melden Sie sich mit Ihrem EOS-Konto an.",
+      "action": "Anmelden"
     }
   },
   "error": {

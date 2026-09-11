@@ -14,7 +14,9 @@ The visitor sees exactly two views, decided by the visit session:
 
 A successful check-in _is_ the check-in: it creates the visit in `ON_SITE`, stores `visitId` and `visitToken` in the `eos_visit` cookie (`Path=/`, `SameSite=Lax`, 16 h, `Secure` over https) and lands on the badge. **Check out** calls `selfCheckOut`, clears the cookie and confirms — the next scan starts a fresh registration. A badge request answered with 401/404/410 (token rejected, visit purged) also clears the cookie, so a stale session falls back to the form instead of trapping the visitor on an error.
 
-**Admin zone** — responsive (cards below `md`, tables and a permanent drawer above). The backend requires an OIDC bearer token with role `eos-admin`; **the token provider is not wired up yet** (see [Open ends](#open-ends)).
+**Admin zone** — responsive (cards below `md`, tables and a permanent drawer above), behind an OIDC login. Opening any `/admin/**` route redirects to Keycloak (authorization code + PKCE, client `eos-admin-panel`); the access token is mirrored into the `auth` slice, so every request carries `Authorization: Bearer …`. Sign out ends the Keycloak session and returns to `/admin/logout`.
+
+Configured through `VITE_OIDC_AUTHORITY` (default `http://localhost:8180/realms/eos`) and `VITE_OIDC_CLIENT_ID` (default `eos-admin-panel`). The realm ships in `infra/keycloak/eos-realm.json` with `http://localhost:3000` and `http://localhost:5173` as redirect origins — add yours there when deploying.
 
 | Route              | Page                                                                                      |
 | ------------------ | ----------------------------------------------------------------------------------------- |

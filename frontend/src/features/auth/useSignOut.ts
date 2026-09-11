@@ -1,16 +1,17 @@
-import { useNavigate } from 'react-router'
+import { useCallback } from 'react'
+import { useAuth } from 'react-oidc-context'
 
 import { baseApi } from '@/api/baseApi'
-import { signedOut } from './authSlice'
 import { useAppDispatch } from '@/app/hooks'
+import { signedOut } from './authSlice'
 
 export function useSignOut() {
   const dispatch = useAppDispatch()
-  const navigate = useNavigate()
+  const auth = useAuth()
 
-  return () => {
+  return useCallback(() => {
     dispatch(signedOut())
     dispatch(baseApi.util.resetApiState())
-    void navigate('/admin/logout', { replace: true })
-  }
+    void auth.signoutRedirect()
+  }, [auth, dispatch])
 }

@@ -141,6 +141,11 @@
       "heading": "You are signed out.",
       "body": "Your session on this device has ended. Close the window or sign in again.",
       "signIn": "Sign in again"
+    },
+    "signIn": {
+      "heading": "EOS Administration",
+      "body": "Please sign in with your EOS account.",
+      "action": "Sign in"
     }
   },
   "error": {

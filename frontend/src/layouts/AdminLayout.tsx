@@ -11,6 +11,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Toolbar from '@mui/material/Toolbar'
 import Typography from '@mui/material/Typography'
 import { useCallback, useMemo, useState } from 'react'
+import { useAuth } from 'react-oidc-context'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router'
 
@@ -29,6 +30,8 @@ export function AdminLayout() {
   const [open, setOpen] = useState(false)
   const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null)
   const signOut = useSignOut()
+  const { user } = useAuth()
+  const userName = user?.profile.name ?? user?.profile.preferred_username
 
   const closeDrawer = useCallback(() => setOpen(false), [])
   const openDrawer = useCallback(() => setOpen(true), [])
@@ -76,6 +79,11 @@ export function AdminLayout() {
           <Typography variant="subtitle1" component="h1" noWrap className="eos-admin__brand">
             {t('app.adminTitle')}
           </Typography>
+          {userName ? (
+            <Typography variant="body2" color="text.secondary" className="eos-admin__user">
+              {userName}
+            </Typography>
+          ) : null}
           <LanguageSwitcher />
           <IconButton aria-label={t('admin.identity.account')} onClick={openAccountMenu}>
             <AccountCircleIcon />

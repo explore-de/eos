@@ -7,6 +7,7 @@ import { VisitsPage } from '@/features/visits/pages/VisitsPage'
 import { BadgePage } from '@/features/visitor/pages/BadgePage'
 import { CheckInPage } from '@/features/visitor/pages/CheckInPage'
 import { ScanPromptPage } from '@/features/visitor/pages/ScanPromptPage'
+import { RequireAdmin } from '@/features/auth/RequireAdmin'
 import { AdminLayout } from '@/layouts/AdminLayout'
 import { NotFoundPage } from '@/pages/NotFoundPage'
 import { VisitorLayout } from '@/layouts/VisitorLayout'
@@ -24,7 +25,11 @@ export const router = createBrowserRouter([
   },
   {
     path: '/admin',
-    Component: AdminLayout,
+    element: (
+      <RequireAdmin>
+        <AdminLayout />
+      </RequireAdmin>
+    ),
     children: [
       { index: true, element: <Navigate to="/admin/visits" replace /> },
       { path: 'visits', Component: VisitsPage },

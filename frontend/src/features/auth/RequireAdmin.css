@@ -1,0 +1,18 @@
+.eos-signin {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--eos-space-5);
+}
+
+.eos-signin__card {
+  padding: var(--eos-space-7) var(--eos-space-5);
+  max-width: 440px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--eos-space-4);
+  text-align: center;
+}
