@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 
-import type { Visit, VisitStatus } from '../api/eosApi'
+import type { SelfCheckInRequest, Visit, VisitCreateRequest, VisitStatus } from '../api/eosApi'
 import { demoLocations, demoVisits } from './fixtures'
 
 const visits = new Map(demoVisits.map((visit) => [visit.id, { ...visit }]))
@@ -39,7 +39,7 @@ export const handlers = [
   }),
 
   http.post('/api/v1/public/visits', async ({ request }) => {
-    const body = (await request.json()) as Record<string, string>
+    const body = (await request.json()) as SelfCheckInRequest
     const visit: Visit = {
       id: `demo-${visits.size + 1}`,
       locationId: body.locationId,
@@ -48,7 +48,7 @@ export const handlers = [
       visitDate: new Date().toISOString().slice(0, 10),
       purpose: body.purpose,
       hostName: body.hostName,
-      contact: (body.contact ?? {}) as Visit['contact'],
+      contact: body.contact,
       status: 'ON_SITE',
       checkInAt: new Date().toISOString(),
       checkOutAt: null,
@@ -102,7 +102,7 @@ export const handlers = [
   }),
 
   http.post('/api/v1/visits', async ({ request }) => {
-    const body = (await request.json()) as Record<string, string>
+    const body = (await request.json()) as VisitCreateRequest
     const visit: Visit = {
       id: `demo-${visits.size + 1}`,
       locationId: body.locationId,
@@ -111,7 +111,7 @@ export const handlers = [
       visitDate: body.visitDate,
       purpose: body.purpose,
       hostName: body.hostName,
-      contact: (body.contact ?? {}) as Visit['contact'],
+      contact: body.contact,
       status: 'EXPECTED',
       checkInAt: null,
       checkOutAt: null,

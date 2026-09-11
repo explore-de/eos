@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useParams } from 'react-router'
 
 import { useGetPublicLocationQuery, useSelfCheckInMutation } from '../../api/eosApi'
+import { toContactInfo } from '../../api/toContactInfo'
 import { visitTokenReceived } from '../../app/authSlice'
 import { useAppDispatch } from '../../app/hooks'
 import { ErrorAlert } from '../../components/ErrorAlert'
@@ -72,10 +73,7 @@ export function CheckInPage() {
         ...(form.visitorCompany.trim() && { visitorCompany: form.visitorCompany.trim() }),
         purpose: form.purpose.trim(),
         ...(form.hostName.trim() && { hostName: form.hostName.trim() }),
-        contact: {
-          ...(form.email.trim() && { email: form.email.trim() }),
-          ...(form.phone.trim() && { phone: form.phone.trim() }),
-        },
+        contact: toContactInfo(form.email, form.phone),
         privacyConsent: true,
       },
     }).unwrap()

@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next'
 
 import type { LocationRead, Visit } from '../../api/eosApi'
 import { useCreateVisitMutation, useUpdateVisitMutation } from '../../api/eosApi'
+import { toContactInfo } from '../../api/toContactInfo'
 import { ErrorAlert } from '../../components/ErrorAlert'
 import './FormDialog.css'
 
@@ -44,7 +45,7 @@ const toForm = (visit: Visit | undefined, fallbackLocationId: string): FormState
   purpose: visit?.purpose ?? '',
   hostName: visit?.hostName ?? '',
   email: visit?.contact.email ?? '',
-  phone: visit?.contact.phone ?? '',
+  phone: visit?.contact.email ? '' : (visit?.contact.text ?? ''),
 })
 
 export function VisitFormDialog({ open, visit, locations, onClose }: Props) {
@@ -71,13 +72,7 @@ export function VisitFormDialog({ open, visit, locations, onClose }: Props) {
     [form],
   )
 
-  const contact = useMemo(
-    () => ({
-      ...(form.email.trim() && { email: form.email.trim() }),
-      ...(form.phone.trim() && { phone: form.phone.trim() }),
-    }),
-    [form.email, form.phone],
-  )
+  const contact = useMemo(() => toContactInfo(form.email, form.phone), [form.email, form.phone])
 
   const submit = useCallback(async () => {
     if (visit) {

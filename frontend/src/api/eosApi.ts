@@ -123,6 +123,18 @@ const injectedRtkApi = api
         }),
         providesTags: ["Visits"],
       }),
+      verifyVisitorPass: build.query<
+        VerifyVisitorPassApiResponse,
+        VerifyVisitorPassApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/api/v1/visits/${queryArg.visitId}/pass/verify`,
+          params: {
+            token: queryArg.token,
+          },
+        }),
+        providesTags: ["Visits"],
+      }),
       listLocations: build.query<ListLocationsApiResponse, ListLocationsApiArg>(
         {
           query: (queryArg) => ({
@@ -228,7 +240,7 @@ export type ListVisitsApiArg = {
   from?: string;
   /** Inclusive upper bound on `visitDate`. */
   to?: string;
-  /** Free text over visitor name, company and host. */
+  /** Free text over visitor name, company, host and `contact.text`. */
   q?: string;
   page?: number;
   size?: number;
@@ -271,6 +283,12 @@ export type CheckOutVisitApiArg = {
 export type GetVisitorPassApiResponse = /** status 200 PDF pass */ Blob;
 export type GetVisitorPassApiArg = {
   visitId: string;
+};
+export type VerifyVisitorPassApiResponse =
+  /** status 200 Valid pass and current visit state */ PassVerification;
+export type VerifyVisitorPassApiArg = {
+  visitId: string;
+  token: string;
 };
 export type ListLocationsApiResponse =
   /** status 200 Locations */ LocationRead[];
@@ -352,7 +370,10 @@ export type VisitCredential = {
   visitToken: string;
   badgeUrl: string;
 };
-export type ContactInfo = any;
+export type ContactInfo = {
+  text: string;
+  email?: string;
+};
 export type SelfCheckInRequest = {
   locationId: string;
   visitorName: string;
@@ -408,6 +429,14 @@ export type VisitUpdateRequest = {
   hostName?: string | null;
   contact?: ContactInfo;
 };
+export type PassVerification = {
+  valid: true;
+  visitId: string;
+  visitorName: string;
+  visitDate: string;
+  status: VisitStatus;
+  locationName: string;
+};
 export type Location = PublicLocation & {
   active: boolean;
   /** Days a checked-out visit is kept before purge. */
@@ -458,6 +487,8 @@ export const {
   useCheckOutVisitMutation,
   useGetVisitorPassQuery,
   useLazyGetVisitorPassQuery,
+  useVerifyVisitorPassQuery,
+  useLazyVerifyVisitorPassQuery,
   useListLocationsQuery,
   useLazyListLocationsQuery,
   useCreateLocationMutation,

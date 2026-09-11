@@ -66,7 +66,7 @@ describe('CheckInPage', () => {
       locationId: LOCATION_ID,
       visitorName: 'Ada Lovelace',
       purpose: 'Workshop',
-      contact: { email: 'ada@example.com' },
+      contact: { text: 'ada@example.com', email: 'ada@example.com' },
       privacyConsent: true,
     })
     await waitFor(() => expect(store.getState().auth.visitToken).toBe('token-abc'))
