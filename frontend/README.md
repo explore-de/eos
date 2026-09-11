@@ -4,11 +4,15 @@ React web app for the EOS visitor management system. It serves both zones of the
 
 **Visitor zone** — mobile-first, no OIDC. A visit is authorized by the opaque `visitToken` returned at check-in and sent back as `X-Visit-Token`.
 
-| Route                   | Page                                         |
-| ----------------------- | -------------------------------------------- |
-| `/`                     | Prompt to scan the location QR code          |
-| `/check-in/:locationId` | Check-in form; on success links to the badge |
-| `/visit/:visitId`       | Digital badge with self check-out            |
+The visitor sees exactly two views, decided by the visit session:
+
+| Route                   | Without a session             | With a session                |
+| ----------------------- | ----------------------------- | ----------------------------- |
+| `/check-in/:locationId` | Check-in form (the QR target) | redirect to the badge         |
+| `/`                     | Prompt to scan the QR code    | redirect to the badge         |
+| `/visit/:visitId`       | "see reception" notice        | Badge card with **Check out** |
+
+A successful check-in _is_ the check-in: it creates the visit in `ON_SITE`, stores `visitId` and `visitToken` in the `eos_visit` cookie (`Path=/`, `SameSite=Lax`, 16 h, `Secure` over https) and lands on the badge. **Check out** calls `selfCheckOut`, clears the cookie and confirms — the next scan starts a fresh registration. A badge request answered with 401/404/410 (token rejected, visit purged) also clears the cookie, so a stale session falls back to the form instead of trapping the visitor on an error.
 
 **Admin zone** — responsive (cards below `md`, tables and a permanent drawer above). The backend requires an OIDC bearer token with role `eos-admin`; **the token provider is not wired up yet** (see [Open ends](#open-ends)).
 

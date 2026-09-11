@@ -3,6 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 
+import { createStore } from '@/app/store'
+import { visitSessionStarted } from '@/features/auth/authSlice'
 import { renderWithProviders } from '@/test/renderWithProviders'
 import { server } from '@/test/server'
 import { CheckInPage } from './CheckInPage'
@@ -69,7 +71,25 @@ describe('CheckInPage', () => {
       contact: { text: 'ada@example.com', email: 'ada@example.com' },
       privacyConsent: true,
     })
-    await waitFor(() => expect(store.getState().auth.visitToken).toBe('token-abc'))
+    await waitFor(() =>
+      expect(store.getState().auth.visit).toEqual({
+        visitId: '22222222-2222-2222-2222-222222222222',
+        visitToken: 'token-abc',
+      }),
+    )
+  })
+
+  it('shows the badge instead of the form while a visit session exists', () => {
+    const store = createStore()
+    store.dispatch(visitSessionStarted({ visitId: 'visit-1', visitToken: 'token-abc' }))
+
+    renderWithProviders(<CheckInPage />, {
+      store,
+      route: `/check-in/${LOCATION_ID}`,
+      path: '/check-in/:locationId',
+    })
+
+    expect(screen.queryByRole('button', { name: 'Check in' })).not.toBeInTheDocument()
   })
 
   it('keeps submit disabled until required fields and consent are given', async () => {

@@ -10,6 +10,7 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   cleanup()
   server.resetHandlers()
+  document.cookie = 'eos_visit=; Path=/; Max-Age=0'
 })
 
 afterAll(() => server.close())

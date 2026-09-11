@@ -4,12 +4,13 @@ import CircularProgress from '@mui/material/CircularProgress'
 import Divider from '@mui/material/Divider'
 import Paper from '@mui/material/Paper'
 import Typography from '@mui/material/Typography'
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 
 import { useGetOwnVisitQuery, useSelfCheckOutMutation } from '@/api/eosApi'
-import { useAppSelector } from '@/app/hooks'
+import { visitSessionEnded } from '@/features/auth/authSlice'
+import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { StatusChip } from '@/components/StatusChip'
 import { BadgeField } from '@/features/visitor/components/BadgeField'
@@ -18,7 +19,9 @@ import './BadgePage.css'
 export function BadgePage() {
   const { t } = useTranslation()
   const { visitId = '' } = useParams()
-  const visitToken = useAppSelector((state) => state.auth.visitToken)
+  const dispatch = useAppDispatch()
+  const session = useAppSelector((state) => state.auth.visit)
+  const visitToken = session?.visitToken
 
   const visit = useGetOwnVisitQuery(
     { visitId, 'X-Visit-Token': visitToken ?? '' },
@@ -26,10 +29,32 @@ export function BadgePage() {
   )
   const [selfCheckOut, checkOut] = useSelfCheckOutMutation()
 
-  const checkOutVisit = useCallback(() => {
+  const checkOutVisit = useCallback(async () => {
     if (!visitToken) return
-    void selfCheckOut({ visitId, 'X-Visit-Token': visitToken })
-  }, [selfCheckOut, visitId, visitToken])
+    await selfCheckOut({ visitId, 'X-Visit-Token': visitToken }).unwrap()
+    dispatch(visitSessionEnded())
+  }, [dispatch, selfCheckOut, visitId, visitToken])
+
+  const handleCheckOut = useCallback(() => void checkOutVisit(), [checkOutVisit])
+
+  const badgeStatus =
+    visit.error && 'status' in visit.error && typeof visit.error.status === 'number'
+      ? visit.error.status
+      : undefined
+
+  useEffect(() => {
+    if (badgeStatus === 401 || badgeStatus === 404 || badgeStatus === 410) {
+      dispatch(visitSessionEnded())
+    }
+  }, [badgeStatus, dispatch])
+
+  if (checkOut.isSuccess) {
+    return (
+      <div className="eos-badge">
+        <Alert severity="success">{t('visitor.badge.checkedOut')}</Alert>
+      </div>
+    )
+  }
 
   if (!visitToken) {
     return <Alert severity="warning">{t('visitor.badge.missingToken')}</Alert>
@@ -95,7 +120,7 @@ export function BadgePage() {
           fullWidth
           className="eos-badge__action"
           disabled={checkOut.isLoading}
-          onClick={checkOutVisit}
+          onClick={handleCheckOut}
         >
           {t('visitor.badge.checkOut')}
         </Button>

@@ -10,12 +10,12 @@ import Typography from '@mui/material/Typography'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link as RouterLink, useParams } from 'react-router'
+import { Navigate, useParams } from 'react-router'
 
 import { useGetPublicLocationQuery, useSelfCheckInMutation } from '@/api/eosApi'
 import { toContactInfo } from '@/api/toContactInfo'
-import { visitTokenReceived } from '@/features/auth/authSlice'
-import { useAppDispatch } from '@/app/hooks'
+import { visitSessionStarted } from '@/features/auth/authSlice'
+import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import './CheckInPage.css'
 
@@ -43,6 +43,7 @@ export function CheckInPage() {
   const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const { locationId = '' } = useParams()
+  const session = useAppSelector((state) => state.auth.visit)
   const [form, setForm] = useState(emptyForm)
 
   const location = useGetPublicLocationQuery({ locationId }, { skip: !locationId })
@@ -78,7 +79,7 @@ export function CheckInPage() {
       },
     }).unwrap()
 
-    dispatch(visitTokenReceived(result.visitToken))
+    dispatch(visitSessionStarted({ visitId: result.visit.id, visitToken: result.visitToken }))
   }, [dispatch, form, locationId, selfCheckIn])
 
   const handleSubmit = useCallback(
@@ -96,27 +97,14 @@ export function CheckInPage() {
     return undefined
   }, [checkIn.error])
 
+  if (session) {
+    return <Navigate to={`/visit/${session.visitId}`} replace />
+  }
+
   if (location.isLoading) {
     return (
       <div className="eos-checkin__spinner">
         <CircularProgress aria-label={t('common.loading')} />
-      </div>
-    )
-  }
-
-  if (checkIn.isSuccess && checkIn.data) {
-    return (
-      <div className="eos-checkin__done">
-        <Alert severity="success">{t('visitor.checkIn.success')}</Alert>
-        <Button
-          component={RouterLink}
-          to={`/visit/${checkIn.data.visit.id}`}
-          variant="contained"
-          size="large"
-          fullWidth
-        >
-          {t('visitor.checkIn.openBadge')}
-        </Button>
       </div>
     )
   }
