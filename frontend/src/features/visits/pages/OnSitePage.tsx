@@ -6,10 +6,10 @@ import Typography from '@mui/material/Typography'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { useListVisitsQuery } from '../../api/eosApi'
-import { ErrorAlert } from '../../components/ErrorAlert'
-import { PageHeader } from '../../components/PageHeader'
-import { VisitList } from './VisitList'
+import { useListVisitsQuery } from '@/api/eosApi'
+import { ErrorAlert } from '@/components/ErrorAlert'
+import { PageHeader } from '@/components/PageHeader'
+import { VisitList } from '@/features/visits/components/VisitList'
 import './OnSitePage.css'
 
 const noop = () => undefined

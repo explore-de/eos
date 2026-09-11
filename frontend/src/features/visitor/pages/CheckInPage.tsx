@@ -12,11 +12,11 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link as RouterLink, useParams } from 'react-router'
 
-import { useGetPublicLocationQuery, useSelfCheckInMutation } from '../../api/eosApi'
-import { toContactInfo } from '../../api/toContactInfo'
-import { visitTokenReceived } from '../../app/authSlice'
-import { useAppDispatch } from '../../app/hooks'
-import { ErrorAlert } from '../../components/ErrorAlert'
+import { useGetPublicLocationQuery, useSelfCheckInMutation } from '@/api/eosApi'
+import { toContactInfo } from '@/api/toContactInfo'
+import { visitTokenReceived } from '@/features/auth/authSlice'
+import { useAppDispatch } from '@/app/hooks'
+import { ErrorAlert } from '@/components/ErrorAlert'
 import './CheckInPage.css'
 
 interface FormState {

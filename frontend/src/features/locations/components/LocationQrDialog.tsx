@@ -8,9 +8,9 @@ import Typography from '@mui/material/Typography'
 import { useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '../../api/eosApi'
-import { useLocationQrPngQuery } from '../../api/binaryApi'
-import { ErrorAlert } from '../../components/ErrorAlert'
+import type { LocationRead } from '@/api/eosApi'
+import { useLocationQrPngQuery } from '@/api/binaryApi'
+import { ErrorAlert } from '@/components/ErrorAlert'
 import './LocationQrDialog.css'
 
 interface Props {

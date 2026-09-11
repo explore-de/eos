@@ -12,10 +12,10 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '../../api/eosApi'
-import { useCreateLocationMutation, useReplaceLocationMutation } from '../../api/eosApi'
-import { ErrorAlert } from '../../components/ErrorAlert'
-import './FormDialog.css'
+import type { LocationRead } from '@/api/eosApi'
+import { useCreateLocationMutation, useReplaceLocationMutation } from '@/api/eosApi'
+import { ErrorAlert } from '@/components/ErrorAlert'
+import '@/styles/form-dialog.css'
 
 interface Props {
   open: boolean

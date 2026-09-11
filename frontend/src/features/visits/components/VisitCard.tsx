@@ -2,8 +2,8 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 
-import type { Visit } from '../../api/eosApi'
-import { StatusChip } from '../../components/StatusChip'
+import type { Visit } from '@/api/eosApi'
+import { StatusChip } from '@/components/StatusChip'
 import { VisitActions } from './VisitActions'
 import './VisitCard.css'
 

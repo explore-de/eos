@@ -2,7 +2,7 @@ import Chip from '@mui/material/Chip'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { VisitStatus } from '../../api/eosApi'
+import type { VisitStatus } from '@/api/eosApi'
 
 interface Props {
   status: VisitStatus

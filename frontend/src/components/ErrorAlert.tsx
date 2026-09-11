@@ -4,7 +4,7 @@ import type { SerializedError } from '@reduxjs/toolkit'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Problem } from '../api/eosApi'
+import type { Problem } from '@/api/eosApi'
 
 type ApiError = FetchBaseQueryError | SerializedError | undefined
 

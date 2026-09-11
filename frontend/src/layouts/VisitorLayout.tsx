@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography'
 import { useTranslation } from 'react-i18next'
 import { Outlet } from 'react-router'
 
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import './VisitorLayout.css'
 
 export function VisitorLayout() {

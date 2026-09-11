@@ -3,8 +3,8 @@ import userEvent from '@testing-library/user-event'
 import { http, HttpResponse } from 'msw'
 import { describe, expect, it, vi } from 'vitest'
 
-import { renderWithProviders } from '../../test/renderWithProviders'
-import { server } from '../../test/server'
+import { renderWithProviders } from '@/test/renderWithProviders'
+import { server } from '@/test/server'
 import { CheckInPage } from './CheckInPage'
 
 const LOCATION_ID = '11111111-1111-1111-1111-111111111111'

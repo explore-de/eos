@@ -111,18 +111,26 @@ The codegen CLI needs `esbuild-runner` to read the TypeScript config file; it is
 
 ```
 src/
-  api/        baseApi.ts (hand-written) + eosApi.ts (generated) + binaryApi.ts (QR/PDF blobs)
-  app/        store, typed hooks, authSlice, router, layouts, useSignOut
-  components/ shared components, each with its own .css
+  api/          baseApi.ts (hand-written) + eosApi.ts (generated) + binaryApi.ts + toContactInfo.ts
+  app/          store, typed hooks, router
+  components/   shared components used by more than one feature
   features/
-    admin/    admin panel pages and dialogs (+ .css per component)
-    visitor/  visitor self-service pages (+ .css per component)
-  i18n/       i18next setup, locales/{de,en}.json, i18next.d.ts
-  mocks/      MSW browser worker, handlers and demo fixtures (dev only)
-  styles/     tokens.css (design tokens), base.css, mui-skin.css
-  test/       MSW server, setup, renderWithProviders
-  theme.ts    brand palette and MUI theme (CSS variables, light + dark)
+    auth/       auth slice, useSignOut, logout page
+    locations/  components/ + pages/
+    visits/     components/ + pages/ (visits list, evacuation list)
+    visitor/    components/ + pages/ (check-in, badge, QR prompt)
+  layouts/      VisitorLayout, AdminLayout
+  pages/        pages outside any feature (NotFoundPage)
+  i18n/         i18next setup, locales/{de,en}.json, i18next.d.ts
+  mocks/        MSW browser worker, handlers and demo fixtures (dev only)
+  styles/       tokens.css, base.css, mui-skin.css, form-dialog.css
+  test/         MSW server, setup, renderWithProviders
+  theme.ts      brand palette and MUI theme (CSS variables, light + dark)
 ```
+
+A feature owns everything only it uses; anything a second feature needs moves up to `components/` or `styles/`. Each component keeps its stylesheet next to it, so a page and its CSS move together.
+
+`@/` resolves to `src/` (`vite.config.ts` alias + `tsconfig.app.json` paths). Imports inside one folder stay relative (`./VisitCard`); anything crossing a folder uses the alias (`@/api/eosApi`), so moving a file never rewrites a chain of `../../`.
 
 Use `useAppDispatch` / `useAppSelector` from `src/app/hooks.ts` — never the untyped `react-redux` hooks.
 

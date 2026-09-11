@@ -14,10 +14,10 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router'
 
-import { useGetCurrentUserQuery } from '../api/eosApi'
-import { LanguageSwitcher } from '../components/LanguageSwitcher'
+import { useGetCurrentUserQuery } from '@/api/eosApi'
+import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import './AdminLayout.css'
-import { useSignOut } from './useSignOut'
+import { useSignOut } from '@/features/auth/useSignOut'
 
 const NAV = [
   { to: '/admin/visits', key: 'nav.visits' },

@@ -11,11 +11,11 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead, Visit } from '../../api/eosApi'
-import { useCreateVisitMutation, useUpdateVisitMutation } from '../../api/eosApi'
-import { toContactInfo } from '../../api/toContactInfo'
-import { ErrorAlert } from '../../components/ErrorAlert'
-import './FormDialog.css'
+import type { LocationRead, Visit } from '@/api/eosApi'
+import { useCreateVisitMutation, useUpdateVisitMutation } from '@/api/eosApi'
+import { toContactInfo } from '@/api/toContactInfo'
+import { ErrorAlert } from '@/components/ErrorAlert'
+import '@/styles/form-dialog.css'
 
 interface Props {
   open: boolean

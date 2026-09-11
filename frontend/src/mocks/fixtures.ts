@@ -1,4 +1,4 @@
-import type { LocationRead, Visit } from '../api/eosApi'
+import type { LocationRead, Visit } from '@/api/eosApi'
 
 export const DEMO_LOCATION_ID = '11111111-1111-1111-1111-111111111111'
 

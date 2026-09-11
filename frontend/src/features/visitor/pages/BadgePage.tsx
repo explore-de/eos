@@ -8,11 +8,11 @@ import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 
-import { useGetOwnVisitQuery, useSelfCheckOutMutation } from '../../api/eosApi'
-import { useAppSelector } from '../../app/hooks'
-import { ErrorAlert } from '../../components/ErrorAlert'
-import { StatusChip } from '../../components/StatusChip'
-import { BadgeField } from './BadgeField'
+import { useGetOwnVisitQuery, useSelfCheckOutMutation } from '@/api/eosApi'
+import { useAppSelector } from '@/app/hooks'
+import { ErrorAlert } from '@/components/ErrorAlert'
+import { StatusChip } from '@/components/StatusChip'
+import { BadgeField } from '@/features/visitor/components/BadgeField'
 import './BadgePage.css'
 
 export function BadgePage() {

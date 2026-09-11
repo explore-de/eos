@@ -6,10 +6,10 @@ import { I18nextProvider } from 'react-i18next'
 import { Provider } from 'react-redux'
 import { MemoryRouter, Route, Routes } from 'react-router'
 
-import { createStore } from '../app/store'
-import type { AppStore } from '../app/store'
-import i18n from '../i18n'
-import { theme } from '../theme'
+import { createStore } from '@/app/store'
+import type { AppStore } from '@/app/store'
+import i18n from '@/i18n'
+import { theme } from '@/theme'
 
 interface Options extends Omit<RenderOptions, 'wrapper'> {
   store?: AppStore

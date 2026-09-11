@@ -1,6 +1,6 @@
 import { http, HttpResponse } from 'msw'
 
-import type { SelfCheckInRequest, Visit, VisitCreateRequest, VisitStatus } from '../api/eosApi'
+import type { SelfCheckInRequest, Visit, VisitCreateRequest, VisitStatus } from '@/api/eosApi'
 import { demoLocations, demoVisits } from './fixtures'
 
 const visits = new Map(demoVisits.map((visit) => [visit.id, { ...visit }]))

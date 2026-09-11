@@ -8,9 +8,9 @@ import Tooltip from '@mui/material/Tooltip'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Visit } from '../../api/eosApi'
-import { useCheckInVisitMutation, useCheckOutVisitMutation } from '../../api/eosApi'
-import { useLazyVisitorPassPdfQuery } from '../../api/binaryApi'
+import type { Visit } from '@/api/eosApi'
+import { useCheckInVisitMutation, useCheckOutVisitMutation } from '@/api/eosApi'
+import { useLazyVisitorPassPdfQuery } from '@/api/binaryApi'
 import './VisitActions.css'
 
 interface Props {

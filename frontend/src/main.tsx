@@ -6,11 +6,11 @@ import { Provider } from 'react-redux'
 import { RouterProvider } from 'react-router'
 
 import './i18n'
-import './styles/tokens.css'
-import './styles/base.css'
-import './styles/mui-skin.css'
-import { router } from './app/router'
-import { store } from './app/store'
+import '@/styles/tokens.css'
+import '@/styles/base.css'
+import '@/styles/mui-skin.css'
+import { router } from '@/app/router'
+import { store } from '@/app/store'
 import { theme } from './theme'
 
 const start = async () => {

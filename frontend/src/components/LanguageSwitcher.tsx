@@ -3,7 +3,7 @@ import TextField from '@mui/material/TextField'
 import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import { supportedLngs } from '../i18n'
+import { supportedLngs } from '@/i18n'
 
 export function LanguageSwitcher() {
   const { i18n, t } = useTranslation()
