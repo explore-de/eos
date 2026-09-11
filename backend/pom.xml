@@ -8,6 +8,8 @@
 
     <properties>
         <compiler-plugin.version>3.15.0</compiler-plugin.version>
+        <formatter-plugin.version>2.29.0</formatter-plugin.version>
+        <impsort-plugin.version>1.13.0</impsort-plugin.version>
         <maven.compiler.release>25</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -141,6 +143,42 @@
                         <maven.home>${maven.home}</maven.home>
                     </systemPropertyVariables>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code.formatter</groupId>
+                <artifactId>formatter-maven-plugin</artifactId>
+                <version>${formatter-plugin.version}</version>
+                <configuration>
+                    <configFile>${project.basedir}/config/eclipse-format.xml</configFile>
+                    <lineEnding>LF</lineEnding>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>validate</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>net.revelc.code</groupId>
+                <artifactId>impsort-maven-plugin</artifactId>
+                <version>${impsort-plugin.version}</version>
+                <configuration>
+                    <compliance>${maven.compiler.release}</compliance>
+                    <groups>java.,jakarta.,io.,org.,com.,de.,de.exentra.,de.explore.</groups>
+                    <staticGroups>java.,jakarta.,io.,org.,com.,de.,de.exentra.,de.explore.</staticGroups>
+                    <removeUnused>true</removeUnused>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <artifactId>maven-failsafe-plugin</artifactId>
