@@ -7,7 +7,31 @@ If you want to learn more about Quarkus, please visit its website: <https://quar
 ## Admin API
 
 All admin endpoints require an authenticated principal with the `eos-admin`
-role. Responses containing visitor or location data use `Cache-Control: no-store`.
+role. `GET` responses carrying visitor or location data use `Cache-Control:
+no-store`; other methods are not cached by browsers or shared caches in the
+first place.
+
+Request bodies and query parameters are checked with Hibernate Validator, so a
+rejected request reports **every** violation at once as an RFC 9457 problem
+document:
+
+```
+HTTP/1.1 400 Bad Request
+Content-Type: application/problem+json
+
+{
+  "type": "about:blank",
+  "title": "Validation failed",
+  "status": 400,
+  "errors": [
+    { "field": "city", "message": "must not be blank" },
+    { "field": "companyName", "message": "size must be between 0 and 200" }
+  ]
+}
+```
+
+The `status` query parameter is matched case-insensitively; an unknown value is
+reported the same way, with `field` naming the parameter.
 
 ### Locations
 

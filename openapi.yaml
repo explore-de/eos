@@ -10,6 +10,20 @@ info:
         location QR code. No OIDC. A visit is authorized by the opaque
         `visitToken` handed out at registration.
       * everything else — admin panel, OIDC bearer token, role `eos-admin`.
+
+    EOS records **visits, not visitors.** There is no visitor entity and no
+    recognition across visits: contact details belong to the single visit they
+    were given for, and are purged with it per the location's `retentionDays`.
+    `selfCheckIn` therefore never recognises a returning visitor: this endpoint is
+    unauthenticated, and `visitorName` plus `contact.email` are not secrets, so
+    reissuing an existing `visitToken` on a match would hand a guessable pair of
+    facts the power to read someone's badge and check them out. A duplicate
+    registration is instead resolved at the reception desk.
+
+    `badgeUrl` and the 201 `Location` header carry the `visitId` only — never the
+    `visitToken`. The token is returned exactly once, in the response body, and is
+    replayed by the visitor app as `X-Visit-Token`. Keeping it out of URLs keeps it
+    out of access logs, browser history and `Referer` headers.
 servers:
   - url: /
 tags:
@@ -66,11 +80,6 @@ paths:
               schema: { $ref: '#/components/schemas/VisitCredential' }
         '400': { $ref: '#/components/responses/BadRequest' }
         '404': { $ref: '#/components/responses/NotFound' }
-        '409':
-          description: An open visit already exists for this visitor at this location
-          content:
-            application/problem+json:
-              schema: { $ref: '#/components/schemas/Problem' }
         '429': { $ref: '#/components/responses/TooManyRequests' }
 
   /api/v1/public/visits/{visitId}:
@@ -148,7 +157,7 @@ paths:
           schema: { type: string, format: date }
         - name: q
           in: query
-          description: Free text over visitor name, company and host.
+          description: Free text over visitor name, company, host and `contact.text`.
           schema: { type: string, maxLength: 100 }
         - name: page
           in: query
@@ -236,6 +245,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     delete:
       tags: [Visits]
       summary: Delete a visit (GDPR erasure)
@@ -413,6 +423,7 @@ paths:
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
         '412': { $ref: '#/components/responses/PreconditionFailed' }
+        '428': { $ref: '#/components/responses/PreconditionRequired' }
     delete:
       tags: [Locations]
       summary: Deactivate a location
@@ -522,6 +533,11 @@ components:
       content:
         application/problem+json:
           schema: { $ref: '#/components/schemas/Problem' }
+    PreconditionRequired:
+      description: The `If-Match` header is required but was not supplied
+      content:
+        application/problem+json:
+          schema: { $ref: '#/components/schemas/Problem' }
     TooManyRequests:
       description: Rate limit exceeded
       content:
@@ -539,13 +555,18 @@ components:
 
     ContactInfo:
       type: object
-      description: At least one of `email` or `phone` is required.
+      description: |
+        `text` is the contact detail exactly as the visitor typed it. It is never
+        parsed — only displayed and exported — so it accommodates real-world input
+        such as `030 12345 extension 7`.
+
+        `email` is populated only when the visitor uses the mail field. It is the
+        only machine-usable contact field and the only one `selfCheckIn` uses to
+        recognise a returning visitor.
+      required: [text]
       properties:
+        text: { type: string, minLength: 3, maxLength: 200 }
         email: { type: string, format: email, maxLength: 254 }
-        phone: { type: string, maxLength: 32, pattern: '^[+0-9 ()/-]{5,32}$' }
-      anyOf:
-        - required: [email]
-        - required: [phone]
 
     Address:
       type: object
