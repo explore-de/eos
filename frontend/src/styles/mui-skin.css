@@ -1,0 +1,106 @@
+.MuiButton-root {
+  border-radius: var(--eos-radius-pill);
+  padding-inline: var(--eos-space-5);
+}
+
+.MuiButton-sizeLarge {
+  padding-block: var(--eos-space-3);
+  font-size: 1rem;
+}
+
+.MuiButton-contained {
+  box-shadow: var(--eos-glow-primary);
+}
+
+.MuiButton-outlined {
+  border-width: 1.5px;
+}
+
+.MuiPaper-outlined,
+.MuiDialog-paper {
+  border-radius: var(--eos-radius-lg);
+  border: var(--eos-card-border);
+  background-color: var(--eos-surface-card);
+  background-image: none;
+  backdrop-filter: blur(18px);
+}
+
+.MuiCard-root {
+  border-radius: var(--eos-radius-lg);
+  border: var(--eos-card-border);
+  background-color: var(--eos-surface-card);
+  background-image: none;
+  backdrop-filter: blur(18px);
+  box-shadow: var(--eos-card-shadow);
+  transition:
+    box-shadow 160ms ease,
+    transform 160ms ease;
+}
+
+.MuiCard-root:hover {
+  box-shadow: var(--eos-shadow-raised);
+}
+
+.MuiChip-root {
+  border-radius: var(--eos-radius-sm);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.MuiOutlinedInput-root {
+  border-radius: var(--eos-radius-md);
+  background: color-mix(in srgb, #ffffff 6%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--eos-hairline);
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  background: color-mix(in srgb, #ffffff 6%, transparent);
+  font-weight: 650;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  border-bottom: var(--eos-border-subtle);
+}
+
+.MuiTableBody-root .MuiTableRow-root:last-of-type .MuiTableCell-root {
+  border-bottom: none;
+}
+
+.MuiDialog-paper {
+  box-shadow: var(--eos-shadow-raised);
+}
+
+.MuiDialogTitle-root {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.MuiAlert-root {
+  border-radius: var(--eos-radius-md);
+}
+
+.MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: color-mix(in srgb, var(--eos-palette-primary-main) 55%, transparent);
+}
+
+.MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-width: 1.5px;
+  border-color: var(--eos-palette-primary-main);
+}
+
+.MuiInputLabel-root.Mui-focused {
+  color: var(--eos-palette-primary-main);
+}
+
+.MuiDivider-root {
+  border-color: var(--eos-palette-divider);
+}
+
+.MuiTableHead-root .MuiTableCell-root {
+  color: var(--eos-palette-text-secondary);
+  border-bottom-color: var(--eos-hairline);
+}

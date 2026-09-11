@@ -1,0 +1,22 @@
+.eos-visit-card {
+  box-shadow: var(--eos-card-shadow);
+}
+
+.eos-visit-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--eos-space-2);
+}
+
+.eos-visit-card__name {
+  font-weight: 650;
+}
+
+.eos-visit-card__meta {
+  margin-top: var(--eos-space-2);
+}
+
+.eos-visit-card__actions {
+  margin-top: var(--eos-space-2);
+}

@@ -1,0 +1,30 @@
+.eos-onsite {
+  display: flex;
+  flex-direction: column;
+  gap: var(--eos-space-5);
+}
+
+.eos-onsite__count {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--eos-space-2);
+  align-self: flex-start;
+  padding: var(--eos-space-2) var(--eos-space-4);
+  border-radius: var(--eos-radius-pill);
+  background: color-mix(in srgb, var(--eos-accent-on-site) 14%, transparent);
+  color: var(--eos-accent-on-site);
+  font-weight: 650;
+}
+
+.eos-onsite__empty {
+  padding: var(--eos-space-7) var(--eos-space-4);
+  text-align: center;
+  border: 1px dashed var(--eos-palette-divider);
+  border-radius: var(--eos-radius-lg);
+}
+
+.eos-onsite__spinner {
+  display: flex;
+  justify-content: center;
+  padding-block: var(--eos-space-7);
+}

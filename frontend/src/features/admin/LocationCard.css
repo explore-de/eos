@@ -1,0 +1,30 @@
+.eos-location-card {
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--eos-card-shadow);
+}
+
+.eos-location-card--inactive {
+  opacity: 0.75;
+}
+
+.eos-location-card__head {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--eos-space-2);
+  align-items: flex-start;
+}
+
+.eos-location-card__name {
+  font-weight: 650;
+}
+
+.eos-location-card__count {
+  margin-top: var(--eos-space-3);
+}
+
+.eos-location-card__actions {
+  margin-top: auto;
+  padding: var(--eos-space-2) var(--eos-space-3) var(--eos-space-3);
+  border-top: 1px solid var(--eos-hairline);
+}

@@ -1,0 +1,22 @@
+.eos-scan {
+  padding: var(--eos-space-6) var(--eos-space-5);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--eos-space-4);
+}
+
+.eos-scan__icon {
+  width: 92px;
+  height: 92px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--eos-radius-pill);
+  background: var(--eos-surface-muted);
+  color: var(--eos-palette-primary-main);
+}
+
+.eos-scan__icon .MuiSvgIcon-root {
+  font-size: 48px;
+}

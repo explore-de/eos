@@ -50,3 +50,6 @@ release.properties
 
 # Local Docker Compose customizations
 docker-compose.override.yml
+
+# Local scratch notes
+.local-docs/

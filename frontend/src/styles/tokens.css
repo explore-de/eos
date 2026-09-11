@@ -1,0 +1,38 @@
+:root {
+  --eos-space-1: 4px;
+  --eos-space-2: 8px;
+  --eos-space-3: 12px;
+  --eos-space-4: 16px;
+  --eos-space-5: 24px;
+  --eos-space-6: 32px;
+  --eos-space-7: 48px;
+
+  --eos-radius-sm: 12px;
+  --eos-radius-md: 16px;
+  --eos-radius-lg: 24px;
+  --eos-radius-pill: 999px;
+
+  --eos-border-subtle: 1px solid var(--eos-palette-divider);
+
+  --eos-shadow-raised: 0 2px 8px rgb(0 0 0 / 70%), 0 22px 48px -24px rgb(0 0 0 / 95%);
+  --eos-card-shadow:
+    0 1px 0 0 color-mix(in srgb, #ffffff 8%, transparent) inset, 0 20px 50px -30px rgb(0 0 0 / 95%);
+  --eos-card-border: 1px solid color-mix(in srgb, #ffffff 12%, transparent);
+  --eos-bar-blur: blur(22px);
+  --eos-glow-primary: 0 10px 30px -14px
+    color-mix(in srgb, var(--eos-palette-primary-main) 90%, transparent);
+
+  --eos-surface-page: var(--eos-palette-background-default);
+  --eos-surface-card: color-mix(in srgb, #ffffff 5%, transparent);
+  --eos-surface-muted: color-mix(in srgb, #ffffff 7%, transparent);
+  --eos-surface-bar: color-mix(in srgb, #000000 45%, transparent);
+  --eos-hairline: color-mix(in srgb, #ffffff 12%, transparent);
+  --eos-accent-expected: var(--eos-palette-info-main);
+  --eos-accent-on-site: var(--eos-palette-primary-main);
+  --eos-accent-checked-out: var(--eos-palette-text-secondary);
+
+  --eos-focus-ring: 0 0 0 3px color-mix(in srgb, var(--eos-palette-primary-main) 45%, transparent);
+
+  --eos-layout-sidebar: 244px;
+  --eos-layout-reading: 34rem;
+}
