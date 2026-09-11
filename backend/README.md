@@ -12,6 +12,40 @@ You can run your application in dev mode that enables live coding using:
 ./mvnw quarkus:dev
 ```
 
+## Visitor-pass PDF export
+
+The backend exposes the admin-only endpoints below. No frontend behavior is part
+of this module.
+
+- `GET /api/v1/visits/{visitId}/pass` exports the PDF.
+- `GET /api/v1/visits/{visitId}/pass/verify?token=...` verifies the signed QR
+  link and returns the current visit state.
+
+Both endpoints require an authenticated principal with the `eos-admin` role.
+Set `EOS_PASS_SIGNING_SECRET` to a random value of at least 32 characters and
+map it to `eos.pass.signing-secret` in the deployment configuration. QR tokens
+expire after `eos.pass.verification-ttl` (24 hours by default).
+
+`VisitPassRepository` is intentionally read-only and expects the visit/location
+columns named in its projection. If the team-owned persistence schema uses
+different names, only that projection and its result mapping need adapting; PDF,
+token, and HTTP code are isolated from the broader visit implementation.
+
+## Local architecture stack
+
+From the repository root, `docker compose up --build` starts PostgreSQL, the
+Keycloak OIDC provider, and the backend. The imported development realm contains
+the user `eos-admin` with password `admin-local-only`; these credentials and all
+other Compose defaults are for local development only.
+
+The separately owned admin and visitor frontends are declared under the
+`frontends` profile without adding frontend code here. Once their images exist,
+set `EOS_ADMIN_PANEL_IMAGE` and `EOS_VISITOR_WEB_IMAGE`, then run:
+
+```shell script
+docker compose --profile frontends up --build
+```
+
 > **_NOTE:_**  Quarkus now ships with a Dev UI, which is available in dev mode only at <http://localhost:8080/q/dev/>.
 
 ## Packaging and running the application

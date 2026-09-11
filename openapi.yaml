@@ -296,6 +296,7 @@ paths:
     get:
       tags: [Visits]
       summary: Printable visitor pass (Besucherpass)
+      description: Admin-only PDF export. The embedded QR code contains a signed, expiring link to the admin-only verification endpoint.
       operationId: getVisitorPass
       parameters:
         - $ref: '#/components/parameters/VisitId'
@@ -305,6 +306,29 @@ paths:
           content:
             application/pdf:
               schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/visits/{visitId}/pass/verify:
+    get:
+      tags: [Visits]
+      summary: Verify a visitor pass QR code
+      description: Admin-only verification of the signed, expiring token embedded in an exported visitor pass.
+      operationId: verifyVisitorPass
+      parameters:
+        - $ref: '#/components/parameters/VisitId'
+        - name: token
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Valid pass and current visit state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PassVerification' }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
         '403': { $ref: '#/components/responses/Forbidden' }
         '404': { $ref: '#/components/responses/NotFound' }
@@ -638,6 +662,17 @@ components:
           type: string
           description: Returned only here. Sent back as `X-Visit-Token`.
         badgeUrl: { type: string, format: uri }
+
+    PassVerification:
+      type: object
+      required: [valid, visitId, visitorName, visitDate, status, locationName]
+      properties:
+        valid: { type: boolean, const: true }
+        visitId: { type: string, format: uuid }
+        visitorName: { type: string }
+        visitDate: { type: string, format: date }
+        status: { $ref: '#/components/schemas/VisitStatus' }
+        locationName: { type: string }
 
     SelfCheckInRequest:
       type: object
