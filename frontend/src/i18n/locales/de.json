@@ -66,8 +66,6 @@
       "privacyConsent": "Ich willige in die Speicherung meiner Kontaktdaten ein.",
       "privacyNotice": "Datenschutzhinweis",
       "submit": "Anmelden",
-      "success": "Angemeldet. Ihr Besucherausweis ist bereit.",
-      "openBadge": "Besucherausweis öffnen",
       "conflict": "Für Sie ist an diesem Standort bereits ein offener Besuch erfasst.",
       "rateLimited": "Zu viele Versuche. Bitte warten Sie einen Moment."
     },

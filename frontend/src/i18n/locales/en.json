@@ -66,8 +66,6 @@
       "privacyConsent": "I consent to the storage of my contact data.",
       "privacyNotice": "Privacy notice",
       "submit": "Check in",
-      "success": "Checked in. Your visitor badge is ready.",
-      "openBadge": "Open visitor badge",
       "conflict": "An open visit already exists for you at this location.",
       "rateLimited": "Too many attempts. Please wait a moment."
     },
