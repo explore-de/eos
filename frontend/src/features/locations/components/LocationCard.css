@@ -4,10 +4,6 @@
   box-shadow: var(--eos-card-shadow);
 }
 
-.eos-location-card--inactive {
-  opacity: 0.75;
-}
-
 .eos-location-card__head {
   display: flex;
   justify-content: space-between;
@@ -19,8 +15,9 @@
   font-weight: 650;
 }
 
-.eos-location-card__count {
+.eos-location-card__info {
   margin-top: var(--eos-space-3);
+  font-style: italic;
 }
 
 .eos-location-card__actions {

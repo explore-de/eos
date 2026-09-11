@@ -124,6 +124,63 @@ Semantic aliases keep the intent readable: `--eos-accent-on-site` / `--eos-accen
 
 ## API client
 
+`src/api/` is hand-written against **the backend as it actually is**, not against the repository's `openapi.yaml`. The two disagree, and the running service wins:
+
+|                       | `openapi.yaml`                             | backend (and this client)                              |
+| --------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| Admin paths           | `/api/v1/visits`, `/api/v1/locations`      | `/api/v1/admin/visits`, `/api/v1/admin/locations`      |
+| Statuses              | `EXPECTED`, `ON_SITE`, `CHECKED_OUT`       | `REGISTERED`, `CHECKED_IN`, `CHECKED_OUT`, `CANCELLED` |
+| Contact               | `contact: { text, email }`                 | `contactInfo: string`                                  |
+| Visit list            | `VisitPage { items, page, totalElements }` | bare array with `limit` / `offset`                     |
+| Identity, QR endpoint | `/api/v1/me`, `/locations/{id}/qr.png`     | not implemented                                        |
+
+| File           | Holds                                                                        |
+| -------------- | ---------------------------------------------------------------------------- |
+| `types.ts`     | `Visit`, `Location`, their request shapes, `VisitStatus`                     |
+| `baseApi.ts`   | `fetchBaseQuery`, tag types, the `Authorization` and `X-Visit-Token` headers |
+| `eosApi.ts`    | admin endpoints (`/api/v1/admin/**`)                                         |
+| `binaryApi.ts` | the visitor-pass PDF blob                                                    |
+| `publicApi.ts` | the visitor zone — **no backend yet**, see below                             |
+
+RTK Query codegen is gone: the backend's own document (`/q/openapi`, saved as `openapi-backend.yaml` for reference) carries no `operationId`s and empty response schemas, so generating from it produced `unknown` everywhere. Regenerate only if the backend adopts `openapi.yaml`.
+
+Since the backend has no QR endpoint, the location QR code is rendered in the browser with `qrcode`, encoding `<origin>/check-in/<locationId>` — the same URL the visitor would scan.
+
+### Visitor zone is not implemented server-side
+
+`/api/v1/public/**` does not exist on the backend. `publicApi.ts` describes those four endpoints in the shape the rest of the backend uses, so the check-in form, the badge and self check-out compile and work against the MSW mocks, and will light up the moment the backend ships them. Against the real stack they answer 404.
+
+## Styling
+
+**No CSS lives in a component file** — no `sx`, no inline styles. Every component imports its own stylesheet next to it (`CheckInPage.tsx` → `CheckInPage.css`) and only sets `className`. The two form dialogs share `FormDialog.css`; that is the single deliberate exception.
+
+Layers, from most global to most local:
+
+| Layer     | File                      | Holds                                                                              |
+| --------- | ------------------------- | ---------------------------------------------------------------------------------- |
+| Brand     | `src/theme.ts`            | Palette (light + dark), typography, radius, MUI default props                      |
+| Tokens    | `src/styles/tokens.css`   | Semantic variables — spacing, radii, shadows, surfaces, status accents, focus ring |
+| Skin      | `src/styles/mui-skin.css` | How MUI primitives look app-wide (buttons, papers, inputs, tables, dialogs)        |
+| Component | `src/**/<Component>.css`  | Layout and identity of one component                                               |
+
+### The look
+
+One look, folded into the base stylesheets — translucent "glass" surfaces over a dark ground:
+
+- `body` carries two fixed radial glows (orange top-left, violet top-right); every surface above it is semi-transparent white with `backdrop-filter: blur(18px)`, so the glow reads through cards, dialogs, bars and the drawer.
+- Hairline borders (`--eos-hairline`, white at 12%) instead of solid dividers; large radii (12 / 16 / 24px); the primary button carries a coloured halo (`--eos-glow-primary`) rather than a grey drop shadow.
+- Visit status is carried by the chip alone — no accent rails. An inset shadow on a rounded card bows outward at the corner, so accents are never drawn that way.
+
+### Changing the colours
+
+`brand` in `src/theme.ts` is the only place a colour value is written. MUI runs with `cssVariables: { cssVarPrefix: 'eos' }`, so it emits every palette entry as a CSS variable (`--eos-palette-primary-main`, `--eos-palette-background-paper`, …); `tokens.css` and every component stylesheet consume only those variables, never a literal colour. Swapping the palette in `theme.ts` restyles the whole app, CSS included, without touching a stylesheet — and a runtime colour guide later only has to feed a palette object into `createTheme`.
+
+Semantic aliases keep the intent readable: `--eos-accent-on-site` / `--eos-accent-expected` / `--eos-accent-checked-out` map visit status to colour in one place, alongside `--eos-surface-*`, `--eos-shadow-*`, `--eos-radius-*` and `--eos-space-*`.
+
+`main.tsx` wraps the app in `<StyledEngineProvider injectFirst>` so Emotion injects MUI's styles _before_ the stylesheets — without it MUI's runtime styles outrank the component CSS.
+
+## API client
+
 `src/api/eosApi.ts` is **generated — never edit it by hand.** `@rtk-query/codegen-openapi` reads `../openapi.yaml` (config: `openapi-config.ts`) and injects every operation into the empty `baseApi` as a typed hook named after its `operationId` (`useSelfCheckInMutation`, `useListVisitsQuery`, `useGetPublicLocationQuery`, …). Regenerate after any spec change:
 
 ```shell

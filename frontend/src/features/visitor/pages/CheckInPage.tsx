@@ -3,7 +3,6 @@ import Button from '@mui/material/Button'
 import Checkbox from '@mui/material/Checkbox'
 import CircularProgress from '@mui/material/CircularProgress'
 import FormControlLabel from '@mui/material/FormControlLabel'
-import Link from '@mui/material/Link'
 import Paper from '@mui/material/Paper'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
@@ -12,8 +11,7 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useParams } from 'react-router'
 
-import { useGetPublicLocationQuery, useSelfCheckInMutation } from '@/api/eosApi'
-import { toContactInfo } from '@/api/toContactInfo'
+import { useGetPublicLocationQuery, useSelfCheckInMutation } from '@/api/publicApi'
 import { visitSessionStarted } from '@/features/auth/authSlice'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { ErrorAlert } from '@/components/ErrorAlert'
@@ -24,8 +22,7 @@ interface FormState {
   visitorCompany: string
   purpose: string
   hostName: string
-  email: string
-  phone: string
+  contactInfo: string
   privacyConsent: boolean
 }
 
@@ -34,8 +31,7 @@ const emptyForm: FormState = {
   visitorCompany: '',
   purpose: '',
   hostName: '',
-  email: '',
-  phone: '',
+  contactInfo: '',
   privacyConsent: false,
 }
 
@@ -46,19 +42,16 @@ export function CheckInPage() {
   const session = useAppSelector((state) => state.auth.visit)
   const [form, setForm] = useState(emptyForm)
 
-  const location = useGetPublicLocationQuery({ locationId }, { skip: !locationId })
+  const location = useGetPublicLocationQuery(locationId, { skip: !locationId })
   const [selfCheckIn, checkIn] = useSelfCheckInMutation()
-
-  const hostRequired = location.data?.hostRequired === true
 
   const complete = useMemo(
     () =>
       form.visitorName.trim() !== '' &&
       form.purpose.trim() !== '' &&
-      (form.email.trim() !== '' || form.phone.trim() !== '') &&
-      (!hostRequired || form.hostName.trim() !== '') &&
+      form.contactInfo.trim() !== '' &&
       form.privacyConsent,
-    [form, hostRequired],
+    [form],
   )
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
@@ -68,15 +61,13 @@ export function CheckInPage() {
 
   const submit = useCallback(async () => {
     const result = await selfCheckIn({
-      selfCheckInRequest: {
-        locationId,
-        visitorName: form.visitorName.trim(),
-        ...(form.visitorCompany.trim() && { visitorCompany: form.visitorCompany.trim() }),
-        purpose: form.purpose.trim(),
-        ...(form.hostName.trim() && { hostName: form.hostName.trim() }),
-        contact: toContactInfo(form.email, form.phone),
-        privacyConsent: true,
-      },
+      locationId,
+      visitorName: form.visitorName.trim(),
+      visitorCompany: form.visitorCompany.trim() || null,
+      purpose: form.purpose.trim(),
+      hostName: form.hostName.trim() || null,
+      contactInfo: form.contactInfo.trim(),
+      privacyConsent: true,
     }).unwrap()
 
     dispatch(visitSessionStarted({ visitId: result.visit.id, visitToken: result.visitToken }))
@@ -162,7 +153,6 @@ export function CheckInPage() {
           onChange={handleChange}
         />
         <TextField
-          required={hostRequired}
           fullWidth
           label={t('visit.field.hostName')}
           name="hostName"
@@ -170,24 +160,12 @@ export function CheckInPage() {
           onChange={handleChange}
         />
         <TextField
+          required
           fullWidth
-          type="email"
-          inputMode="email"
-          autoComplete="email"
-          label={t('visit.field.email')}
+          name="contactInfo"
+          label={t('visit.field.contactInfo')}
           helperText={t('visitor.checkIn.contactHint')}
-          name="email"
-          value={form.email}
-          onChange={handleChange}
-        />
-        <TextField
-          fullWidth
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          label={t('visit.field.phone')}
-          name="phone"
-          value={form.phone}
+          value={form.contactInfo}
           onChange={handleChange}
         />
         <FormControlLabel
@@ -195,19 +173,7 @@ export function CheckInPage() {
           control={
             <Checkbox name="privacyConsent" checked={form.privacyConsent} onChange={handleChange} />
           }
-          label={
-            <Typography variant="body2">
-              {t('visitor.checkIn.privacyConsent')}
-              {location.data?.privacyNoticeUrl ? (
-                <>
-                  {' '}
-                  <Link href={location.data.privacyNoticeUrl} target="_blank" rel="noreferrer">
-                    {t('visitor.checkIn.privacyNotice')}
-                  </Link>
-                </>
-              ) : null}
-            </Typography>
-          }
+          label={<Typography variant="body2">{t('visitor.checkIn.privacyConsent')}</Typography>}
         />
         <Button
           type="submit"

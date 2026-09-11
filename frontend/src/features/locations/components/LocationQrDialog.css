@@ -17,3 +17,9 @@
 .eos-qr__hint {
   margin-top: var(--eos-space-3);
 }
+
+.eos-qr__url {
+  display: block;
+  margin-top: var(--eos-space-2);
+  word-break: break-all;
+}

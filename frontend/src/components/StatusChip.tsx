@@ -1,7 +1,7 @@
 import Chip from '@mui/material/Chip'
 import { useTranslation } from 'react-i18next'
 
-import type { VisitStatus } from '@/api/eosApi'
+import type { VisitStatus } from '@/api/types'
 import './StatusChip.css'
 
 export function StatusChip({ status }: { status: VisitStatus }) {

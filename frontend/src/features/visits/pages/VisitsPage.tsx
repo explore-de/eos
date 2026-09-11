@@ -10,27 +10,25 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Visit, VisitStatus } from '@/api/eosApi'
 import { useDeleteVisitMutation, useListLocationsQuery, useListVisitsQuery } from '@/api/eosApi'
+import type { Visit, VisitStatus } from '@/api/types'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import { PageHeader } from '@/components/PageHeader'
-import { StatusFilterChip } from '@/features/visits/components/StatusFilterChip'
-import { VisitFormDialog } from '@/features/visits/components/VisitFormDialog'
-import { VisitList } from '@/features/visits/components/VisitList'
+import { StatusFilterChip } from '../components/StatusFilterChip'
+import { VisitFormDialog } from '../components/VisitFormDialog'
+import { VisitList } from '../components/VisitList'
 import './VisitsPage.css'
 
-const STATUSES: VisitStatus[] = ['EXPECTED', 'ON_SITE', 'CHECKED_OUT']
+const STATUSES: VisitStatus[] = ['REGISTERED', 'CHECKED_IN', 'CHECKED_OUT', 'CANCELLED']
 
 interface Filters {
-  q: string
+  date: string
   locationId: string
-  status: VisitStatus[]
-  from: string
-  to: string
+  status: VisitStatus | ''
 }
 
-const emptyFilters: Filters = { q: '', locationId: '', status: [], from: '', to: '' }
+const emptyFilters: Filters = { date: '', locationId: '', status: '' }
 
 export function VisitsPage() {
   const { t } = useTranslation()
@@ -41,31 +39,24 @@ export function VisitsPage() {
   const [formOpen, setFormOpen] = useState(false)
   const [deleting, setDeleting] = useState<Visit | undefined>(undefined)
 
-  const locations = useListLocationsQuery({})
+  const locations = useListLocationsQuery()
   const [deleteVisit, remove] = useDeleteVisitMutation()
 
-  const listArgs = useMemo(
+  const query = useMemo(
     () => ({
-      page,
-      size,
-      ...(filters.q.trim() && { q: filters.q.trim() }),
+      limit: size,
+      offset: page * size,
+      ...(filters.date && { date: filters.date }),
       ...(filters.locationId && { locationId: filters.locationId }),
-      ...(filters.status.length > 0 && { status: filters.status }),
-      ...(filters.from && { from: filters.from }),
-      ...(filters.to && { to: filters.to }),
+      ...(filters.status && { status: filters.status }),
     }),
     [filters, page, size],
   )
 
-  const visits = useListVisitsQuery(listArgs)
+  const visits = useListVisitsQuery(query)
 
-  const items = useMemo(() => visits.data?.items ?? [], [visits.data])
+  const items = useMemo(() => visits.data ?? [], [visits.data])
   const locationOptions = useMemo(() => locations.data ?? [], [locations.data])
-
-  const setFilter = useCallback((key: keyof Filters, value: string | VisitStatus[]) => {
-    setFilters((current) => ({ ...current, [key]: value }))
-    setPage(0)
-  }, [])
 
   const handleFilterChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
@@ -73,20 +64,14 @@ export function VisitsPage() {
     setPage(0)
   }, [])
 
-  const toggleStatus = useCallback(
-    (status: VisitStatus) =>
-      setFilter(
-        'status',
-        filters.status.includes(status)
-          ? filters.status.filter((entry) => entry !== status)
-          : [...filters.status, status],
-      ),
-    [filters.status, setFilter],
-  )
+  const toggleStatus = useCallback((status: VisitStatus) => {
+    setFilters((current) => ({ ...current, status: current.status === status ? '' : status }))
+    setPage(0)
+  }, [])
 
   const confirmDelete = useCallback(async () => {
     if (!deleting) return
-    await deleteVisit({ visitId: deleting.id }).unwrap()
+    await deleteVisit(deleting.id).unwrap()
     setDeleting(undefined)
   }, [deleteVisit, deleting])
 
@@ -127,19 +112,11 @@ export function VisitsPage() {
       <Paper variant="outlined" className="eos-visits__filters">
         <div className="eos-visits__filter-row">
           <TextField
-            fullWidth
-            size="small"
-            label={t('admin.visits.filter.query')}
-            name="q"
-            value={filters.q}
-            onChange={handleFilterChange}
-          />
-          <TextField
             select
             fullWidth
             size="small"
-            label={t('admin.visits.filter.location')}
             name="locationId"
+            label={t('admin.visits.filter.location')}
             value={filters.locationId}
             onChange={handleFilterChange}
             className="eos-visits__location"
@@ -156,18 +133,9 @@ export function VisitsPage() {
           <TextField
             size="small"
             type="date"
-            label={t('admin.visits.filter.from')}
-            name="from"
-            value={filters.from}
-            onChange={handleFilterChange}
-            slotProps={{ inputLabel: { shrink: true } }}
-          />
-          <TextField
-            size="small"
-            type="date"
-            label={t('admin.visits.filter.to')}
-            name="to"
-            value={filters.to}
+            name="date"
+            label={t('admin.visits.filter.date')}
+            value={filters.date}
             onChange={handleFilterChange}
             slotProps={{ inputLabel: { shrink: true } }}
           />
@@ -176,7 +144,7 @@ export function VisitsPage() {
               <StatusFilterChip
                 key={status}
                 status={status}
-                selected={filters.status.includes(status)}
+                selected={filters.status === status}
                 onToggle={toggleStatus}
               />
             ))}
@@ -204,11 +172,13 @@ export function VisitsPage() {
           <VisitList visits={items} onEdit={openEditDialog} onDelete={setDeleting} />
           <TablePagination
             component="div"
-            count={visits.data?.totalElements ?? 0}
+            count={-1}
             page={page}
             rowsPerPage={size}
             rowsPerPageOptions={[25, 50, 100]}
             labelRowsPerPage={t('common.rowsPerPage')}
+            labelDisplayedRows={({ from, to }) => `${from}–${to}`}
+            slotProps={{ actions: { nextButton: { disabled: items.length < size } } }}
             onPageChange={changePage}
             onRowsPerPageChange={changeRowsPerPage}
           />

@@ -17,10 +17,11 @@ const noop = () => undefined
 export function OnSitePage() {
   const { t } = useTranslation()
   const { data, error, isError, isLoading, isFetching, refetch } = useListVisitsQuery({
-    status: ['ON_SITE'],
+    status: 'CHECKED_IN',
+    limit: 200,
   })
 
-  const visits = useMemo(() => data?.items ?? [], [data])
+  const visits = useMemo(() => data ?? [], [data])
 
   const refresh = useCallback(() => void refetch(), [refetch])
 

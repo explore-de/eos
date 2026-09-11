@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '@/api/eosApi'
+import type { Location } from '@/api/types'
 import { useDeleteLocationMutation, useListLocationsQuery } from '@/api/eosApi'
 import { ConfirmDialog } from '@/components/ConfirmDialog'
 import { ErrorAlert } from '@/components/ErrorAlert'
@@ -17,19 +17,19 @@ import './LocationsPage.css'
 
 export function LocationsPage() {
   const { t } = useTranslation()
-  const [editing, setEditing] = useState<LocationRead | undefined>(undefined)
+  const [editing, setEditing] = useState<Location | undefined>(undefined)
   const [formOpen, setFormOpen] = useState(false)
-  const [qrFor, setQrFor] = useState<LocationRead | undefined>(undefined)
-  const [deactivating, setDeactivating] = useState<LocationRead | undefined>(undefined)
+  const [qrFor, setQrFor] = useState<Location | undefined>(undefined)
+  const [deactivating, setDeactivating] = useState<Location | undefined>(undefined)
 
-  const { data, error, isError, isLoading } = useListLocationsQuery({})
+  const { data, error, isError, isLoading } = useListLocationsQuery()
   const [deleteLocation, remove] = useDeleteLocationMutation()
 
   const locations = useMemo(() => data ?? [], [data])
 
   const confirmDeactivate = useCallback(async () => {
     if (!deactivating) return
-    await deleteLocation({ locationId: deactivating.id }).unwrap()
+    await deleteLocation(deactivating.id).unwrap()
     setDeactivating(undefined)
   }, [deactivating, deleteLocation])
 
@@ -40,7 +40,7 @@ export function LocationsPage() {
     setFormOpen(true)
   }, [])
 
-  const openEditDialog = useCallback((location: LocationRead) => {
+  const openEditDialog = useCallback((location: Location) => {
     setEditing(location)
     setFormOpen(true)
   }, [])
@@ -79,7 +79,7 @@ export function LocationsPage() {
               location={location}
               onShowQr={setQrFor}
               onEdit={openEditDialog}
-              onDeactivate={setDeactivating}
+              onDelete={setDeactivating}
             />
           ))}
         </div>

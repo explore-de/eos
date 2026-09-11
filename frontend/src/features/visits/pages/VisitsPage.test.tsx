@@ -9,28 +9,25 @@ import { VisitsPage } from './VisitsPage'
 describe('VisitsPage', () => {
   it('renders the visits returned by the API', async () => {
     server.use(
-      http.get('/api/v1/locations', () => HttpResponse.json([])),
-      http.get('/api/v1/visits', () =>
-        HttpResponse.json({
-          items: [
-            {
-              id: '33333333-3333-3333-3333-333333333333',
-              locationId: '11111111-1111-1111-1111-111111111111',
-              visitorName: 'Grace Hopper',
-              visitorCompany: 'Navy',
-              visitDate: '2026-09-11',
-              purpose: 'Audit',
-              hostName: 'Luca',
-              contact: { email: 'grace@example.com' },
-              status: 'ON_SITE',
-              createdAt: '2026-09-11T08:00:00Z',
-            },
-          ],
-          page: 0,
-          size: 20,
-          totalElements: 1,
-          totalPages: 1,
-        }),
+      http.get('/api/v1/admin/locations', () => HttpResponse.json([])),
+      http.get('/api/v1/admin/visits', () =>
+        HttpResponse.json([
+          {
+            id: '33333333-3333-3333-3333-333333333333',
+            visitorName: 'Grace Hopper',
+            visitorCompany: 'Navy',
+            visitDate: '2026-09-11',
+            purpose: 'Audit',
+            hostName: 'Luca',
+            contactInfo: 'grace@example.com',
+            status: 'CHECKED_IN',
+            locationId: '11111111-1111-1111-1111-111111111111',
+            locationName: 'Hamburg HQ',
+            checkedOutAt: null,
+            createdAt: '2026-09-11T08:00:00Z',
+            updatedAt: '2026-09-11T08:00:00Z',
+          },
+        ]),
       ),
     )
 
@@ -44,10 +41,8 @@ describe('VisitsPage', () => {
 
   it('shows the empty state when no visits exist', async () => {
     server.use(
-      http.get('/api/v1/locations', () => HttpResponse.json([])),
-      http.get('/api/v1/visits', () =>
-        HttpResponse.json({ items: [], page: 0, size: 20, totalElements: 0, totalPages: 0 }),
-      ),
+      http.get('/api/v1/admin/locations', () => HttpResponse.json([])),
+      http.get('/api/v1/admin/visits', () => HttpResponse.json([])),
     )
 
     renderWithProviders(<VisitsPage />)

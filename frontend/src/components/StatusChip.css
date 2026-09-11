@@ -5,14 +5,18 @@
   border-color: color-mix(in srgb, var(--eos-status-color) 38%, transparent);
 }
 
-.eos-status--EXPECTED {
+.eos-status--REGISTERED {
   --eos-status-color: var(--eos-accent-expected);
 }
 
-.eos-status--ON_SITE {
+.eos-status--CHECKED_IN {
   --eos-status-color: var(--eos-accent-on-site);
 }
 
 .eos-status--CHECKED_OUT {
   --eos-status-color: var(--eos-accent-checked-out);
+}
+
+.eos-status--CANCELLED {
+  --eos-status-color: var(--eos-palette-error-main);
 }

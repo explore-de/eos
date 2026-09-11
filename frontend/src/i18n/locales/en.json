@@ -37,9 +37,10 @@
   "visit": {
     "status": {
       "label": "Status",
-      "EXPECTED": "Expected",
-      "ON_SITE": "On site",
-      "CHECKED_OUT": "Checked out"
+      "REGISTERED": "Expected",
+      "CHECKED_IN": "On site",
+      "CHECKED_OUT": "Checked out",
+      "CANCELLED": "Cancelled"
     },
     "field": {
       "visitorName": "Name",
@@ -47,11 +48,10 @@
       "visitDate": "Date",
       "purpose": "Purpose",
       "hostName": "Host",
-      "email": "Email",
-      "phone": "Phone",
       "checkInAt": "Checked in",
       "checkOutAt": "Checked out",
-      "location": "Location"
+      "location": "Location",
+      "contactInfo": "Contact"
     }
   },
   "visitor": {
@@ -62,7 +62,7 @@
     "checkIn": {
       "heading": "Register your visit",
       "intro": "Enter your details and you will get a digital visitor badge.",
-      "contactHint": "Email or phone is enough.",
+      "contactHint": "Email or phone number.",
       "privacyConsent": "I consent to the storage of my contact data.",
       "privacyNotice": "Privacy notice",
       "submit": "Check in",
@@ -96,12 +96,10 @@
       "pass": "Visitor pass",
       "filter": {
         "heading": "Filters",
-        "query": "Name, company, host",
         "location": "Location",
         "allLocations": "All locations",
         "status": "Status",
-        "from": "From",
-        "to": "To"
+        "date": "Date"
       },
       "total": "{{count}} visit",
       "total_other": "{{count}} visits"

@@ -14,7 +14,6 @@ import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { NavLink, Outlet } from 'react-router'
 
-import { useGetCurrentUserQuery } from '@/api/eosApi'
 import { LanguageSwitcher } from '@/components/LanguageSwitcher'
 import './AdminLayout.css'
 import { useSignOut } from '@/features/auth/useSignOut'
@@ -29,7 +28,6 @@ export function AdminLayout() {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [accountAnchor, setAccountAnchor] = useState<HTMLElement | null>(null)
-  const { data: user } = useGetCurrentUserQuery()
   const signOut = useSignOut()
 
   const closeDrawer = useCallback(() => setOpen(false), [])
@@ -78,11 +76,6 @@ export function AdminLayout() {
           <Typography variant="subtitle1" component="h1" noWrap className="eos-admin__brand">
             {t('app.adminTitle')}
           </Typography>
-          {user?.name ? (
-            <Typography variant="body2" color="text.secondary" className="eos-admin__user">
-              {user.name}
-            </Typography>
-          ) : null}
           <LanguageSwitcher />
           <IconButton aria-label={t('admin.identity.account')} onClick={openAccountMenu}>
             <AccountCircleIcon />

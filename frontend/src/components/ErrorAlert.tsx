@@ -4,8 +4,6 @@ import type { SerializedError } from '@reduxjs/toolkit'
 import { useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Problem } from '@/api/eosApi'
-
 type ApiError = FetchBaseQueryError | SerializedError | undefined
 
 const statusKey: Record<number, 'error.unauthorized' | 'error.forbidden' | 'error.notFound'> = {
@@ -16,7 +14,7 @@ const statusKey: Record<number, 'error.unauthorized' | 'error.forbidden' | 'erro
 
 function problemDetail(error: ApiError): string | undefined {
   if (!error || !('status' in error)) return undefined
-  const body = error.data as Problem | undefined
+  const body = error.data as { detail?: string; title?: string } | undefined
   return body?.detail ?? body?.title
 }
 

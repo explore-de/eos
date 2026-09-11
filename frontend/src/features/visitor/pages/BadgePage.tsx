@@ -8,7 +8,7 @@ import { useCallback, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useParams } from 'react-router'
 
-import { useGetOwnVisitQuery, useSelfCheckOutMutation } from '@/api/eosApi'
+import { useGetOwnVisitQuery, useSelfCheckOutMutation } from '@/api/publicApi'
 import { visitSessionEnded } from '@/features/auth/authSlice'
 import { useAppDispatch, useAppSelector } from '@/app/hooks'
 import { ErrorAlert } from '@/components/ErrorAlert'
@@ -24,14 +24,14 @@ export function BadgePage() {
   const visitToken = session?.visitToken
 
   const visit = useGetOwnVisitQuery(
-    { visitId, 'X-Visit-Token': visitToken ?? '' },
+    { visitId, visitToken: visitToken ?? '' },
     { skip: !visitId || !visitToken },
   )
   const [selfCheckOut, checkOut] = useSelfCheckOutMutation()
 
   const checkOutVisit = useCallback(async () => {
     if (!visitToken) return
-    await selfCheckOut({ visitId, 'X-Visit-Token': visitToken }).unwrap()
+    await selfCheckOut({ visitId, visitToken }).unwrap()
     dispatch(visitSessionEnded())
   }, [dispatch, selfCheckOut, visitId, visitToken])
 
@@ -73,7 +73,6 @@ export function BadgePage() {
   }
 
   const badge = visit.data
-  const address = badge.location.address
 
   return (
     <div className="eos-badge">
@@ -95,11 +94,8 @@ export function BadgePage() {
         <Divider />
 
         <div className="eos-badge__fields">
-          <BadgeField label={t('visit.field.location')} value={badge.location.companyName} />
-          <BadgeField
-            label={t('visit.field.visitDate')}
-            value={`${badge.visitDate}${address ? ` · ${address.city}` : ''}`}
-          />
+          <BadgeField label={t('visit.field.location')} value={badge.locationName} />
+          <BadgeField label={t('visit.field.visitDate')} value={badge.visitDate} />
           <BadgeField label={t('visit.field.hostName')} value={badge.hostName} />
           <BadgeField label={t('visit.field.purpose')} value={badge.purpose} />
         </div>
@@ -111,7 +107,7 @@ export function BadgePage() {
 
       {checkOut.isError ? <ErrorAlert error={checkOut.error} /> : null}
 
-      {badge.status === 'CHECKED_OUT' ? (
+      {badge.status === 'CHECKED_OUT' || badge.status === 'CANCELLED' ? (
         <Alert severity="success">{t('visitor.badge.checkedOut')}</Alert>
       ) : (
         <Button

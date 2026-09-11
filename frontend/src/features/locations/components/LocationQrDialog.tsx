@@ -5,32 +5,39 @@ import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
 import Typography from '@mui/material/Typography'
-import { useEffect, useMemo } from 'react'
+import QRCode from 'qrcode'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '@/api/eosApi'
-import { useLocationQrPngQuery } from '@/api/binaryApi'
-import { ErrorAlert } from '@/components/ErrorAlert'
+import type { Location } from '@/api/types'
 import './LocationQrDialog.css'
 
 interface Props {
-  location?: LocationRead
+  location?: Location
   onClose: () => void
 }
 
 export function LocationQrDialog({ location, onClose }: Props) {
   const { t } = useTranslation()
-  const { data, error, isError, isLoading } = useLocationQrPngQuery(
-    { locationId: location?.id ?? '' },
-    { skip: !location },
+  const [rendered, setRendered] = useState<{ forUrl: string; dataUrl: string } | undefined>(
+    undefined,
   )
 
-  const objectUrl = useMemo(() => (data ? URL.createObjectURL(data) : undefined), [data])
+  const checkInUrl = location ? `${window.location.origin}/check-in/${location.id}` : ''
+  const dataUrl = rendered?.forUrl === checkInUrl ? rendered.dataUrl : undefined
 
   useEffect(() => {
-    if (!objectUrl) return
-    return () => URL.revokeObjectURL(objectUrl)
-  }, [objectUrl])
+    if (!checkInUrl) return
+
+    let active = true
+    void QRCode.toDataURL(checkInUrl, { width: 640, margin: 2 }).then((url) => {
+      if (active) setRendered({ forUrl: checkInUrl, dataUrl: url })
+    })
+
+    return () => {
+      active = false
+    }
+  }, [checkInUrl])
 
   return (
     <Dialog open={location !== undefined} onClose={onClose} fullWidth maxWidth="xs">
@@ -39,19 +46,22 @@ export function LocationQrDialog({ location, onClose }: Props) {
       </DialogTitle>
       <DialogContent>
         <div className="eos-qr__frame">
-          {isLoading ? <CircularProgress aria-label={t('common.loading')} /> : null}
-          {isError ? <ErrorAlert error={error} /> : null}
-          {objectUrl ? (
-            <img className="eos-qr__image" src={objectUrl} alt={t('admin.locations.qr')} />
-          ) : null}
+          {dataUrl ? (
+            <img className="eos-qr__image" src={dataUrl} alt={t('admin.locations.qr')} />
+          ) : (
+            <CircularProgress aria-label={t('common.loading')} />
+          )}
         </div>
         <Typography variant="body2" color="text.secondary" className="eos-qr__hint">
           {t('admin.locations.qrHint')}
         </Typography>
+        <Typography variant="caption" color="text.secondary" className="eos-qr__url">
+          {checkInUrl}
+        </Typography>
       </DialogContent>
       <DialogActions>
-        {objectUrl ? (
-          <Button component="a" href={objectUrl} download={`qr-${location?.id ?? 'location'}.png`}>
+        {dataUrl ? (
+          <Button component="a" href={dataUrl} download={`qr-${location?.id ?? 'location'}.png`}>
             {t('common.download')}
           </Button>
         ) : null}

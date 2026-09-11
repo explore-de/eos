@@ -19,12 +19,13 @@ const badge = (status: string) => ({
   visitDate: '2026-09-11',
   purpose: 'Workshop',
   hostName: 'Grace Hopper',
+  contactInfo: 'ada@example.test',
   status,
-  location: {
-    id: LOCATION_ID,
-    companyName: 'Hamburg HQ',
-    address: { street: 'Hafenstr. 1', postalCode: '20095', city: 'Hamburg', country: 'DE' },
-  },
+  locationId: LOCATION_ID,
+  locationName: 'Hamburg HQ',
+  checkedOutAt: null,
+  createdAt: '2026-09-11T08:00:00Z',
+  updatedAt: '2026-09-11T08:00:00Z',
 })
 
 function storeWithSession() {
@@ -36,7 +37,7 @@ function storeWithSession() {
 describe('BadgePage', () => {
   it('shows the visitor card for the checked-in visit', async () => {
     server.use(
-      http.get(`/api/v1/public/visits/${VISIT_ID}`, () => HttpResponse.json(badge('ON_SITE'))),
+      http.get(`/api/v1/public/visits/${VISIT_ID}`, () => HttpResponse.json(badge('CHECKED_IN'))),
     )
 
     renderWithProviders(<BadgePage />, {
@@ -53,7 +54,7 @@ describe('BadgePage', () => {
   it('ends the visit session when the visitor checks out', async () => {
     const checkOut = vi.fn()
     server.use(
-      http.get(`/api/v1/public/visits/${VISIT_ID}`, () => HttpResponse.json(badge('ON_SITE'))),
+      http.get(`/api/v1/public/visits/${VISIT_ID}`, () => HttpResponse.json(badge('CHECKED_IN'))),
       http.post(`/api/v1/public/visits/${VISIT_ID}/checkout`, () => {
         checkOut()
         return HttpResponse.json(badge('CHECKED_OUT'))

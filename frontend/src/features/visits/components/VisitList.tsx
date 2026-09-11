@@ -9,7 +9,7 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
 import { useTranslation } from 'react-i18next'
 
-import type { Visit } from '@/api/eosApi'
+import type { Visit } from '@/api/types'
 import { StatusChip } from '@/components/StatusChip'
 import { VisitActions } from './VisitActions'
 import { VisitCard } from './VisitCard'

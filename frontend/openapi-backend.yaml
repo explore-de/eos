@@ -1,0 +1,439 @@
+---
+openapi: 3.1.0
+components:
+  schemas:
+    LocalDate:
+      type: string
+      format: date
+      examples:
+      - 2022-03-10
+    LocationRequest:
+      type: object
+      required:
+      - companyName
+      - street
+      - postalCode
+      - city
+      - country
+      properties:
+        companyName:
+          type: string
+          pattern: \S
+          maxLength: 200
+        street:
+          type: string
+          pattern: \S
+          maxLength: 200
+        postalCode:
+          type: string
+          pattern: \S
+          maxLength: 32
+        city:
+          type: string
+          pattern: \S
+          maxLength: 120
+        country:
+          type: string
+          pattern: \S
+          maxLength: 120
+        additionalInfo:
+          type: string
+          maxLength: 1000
+    UUID:
+      type: string
+      format: uuid
+      pattern: "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}"
+    VisitRequest:
+      type: object
+      required:
+      - visitorName
+      - visitDate
+      - purpose
+      - hostName
+      - locationId
+      properties:
+        visitorName:
+          type: string
+          pattern: \S
+          maxLength: 200
+        visitorCompany:
+          type: string
+          maxLength: 200
+        visitDate:
+          $ref: "#/components/schemas/LocalDate"
+        purpose:
+          type: string
+          pattern: \S
+          maxLength: 500
+        hostName:
+          type: string
+          pattern: \S
+          maxLength: 200
+        contactInfo:
+          type: string
+          maxLength: 500
+        status:
+          $ref: "#/components/schemas/VisitStatus"
+        locationId:
+          $ref: "#/components/schemas/UUID"
+    VisitStatus:
+      type: string
+      enum:
+      - REGISTERED
+      - CHECKED_IN
+      - CHECKED_OUT
+      - CANCELLED
+  securitySchemes:
+    SecurityScheme:
+      type: openIdConnect
+      description: Authentication
+      openIdConnectUrl: http://oidc:8080/realms/eos/.well-known/openid-configuration
+paths:
+  /api/v1/admin/locations:
+    get:
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: List
+      tags:
+      - Admin Location Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "400":
+          description: Bad Request
+      summary: Create
+      tags:
+      - Admin Location Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/admin/locations/{locationId}:
+    put:
+      parameters:
+      - name: locationId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LocationRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "400":
+          description: Bad Request
+      summary: Update
+      tags:
+      - Admin Location Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    get:
+      parameters:
+      - name: locationId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Get
+      tags:
+      - Admin Location Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    delete:
+      parameters:
+      - name: locationId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Delete
+      tags:
+      - Admin Location Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/admin/visits:
+    get:
+      parameters:
+      - name: date
+        in: query
+        schema:
+          $ref: "#/components/schemas/LocalDate"
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          format: int32
+          maximum: 200
+          minimum: 1
+          default: 50
+      - name: locationId
+        in: query
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: offset
+        in: query
+        schema:
+          type: integer
+          format: int32
+          minimum: 0
+          default: 0
+      - name: status
+        in: query
+        schema:
+          $ref: "#/components/schemas/VisitStatus"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: List
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisitRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "400":
+          description: Bad Request
+      summary: Create
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/admin/visits/{visitId}:
+    put:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/VisitRequest"
+        required: true
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+        "400":
+          description: Bad Request
+      summary: Update
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    get:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Get
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+    delete:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Delete
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/admin/visits/{visitId}/check-out:
+    post:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Check Out
+      tags:
+      - Admin Visit Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/visits/{visitId}/pass:
+    get:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/pdf: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Export
+      tags:
+      - Visitor Pass Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+  /api/v1/visits/{visitId}/pass/verify:
+    get:
+      parameters:
+      - name: visitId
+        in: path
+        required: true
+        schema:
+          $ref: "#/components/schemas/UUID"
+      - name: token
+        in: query
+        schema:
+          type: string
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: {}
+        "401":
+          description: Not Authorized
+        "403":
+          description: Not Allowed
+      summary: Verify
+      tags:
+      - Visitor Pass Resource
+      security:
+      - SecurityScheme:
+        - eos-admin
+info:
+  title: backend API
+  version: 0.1.0-SNAPSHOT

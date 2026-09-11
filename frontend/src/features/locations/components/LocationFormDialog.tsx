@@ -3,8 +3,6 @@ import Dialog from '@mui/material/Dialog'
 import DialogActions from '@mui/material/DialogActions'
 import DialogContent from '@mui/material/DialogContent'
 import DialogTitle from '@mui/material/DialogTitle'
-import FormControlLabel from '@mui/material/FormControlLabel'
-import Switch from '@mui/material/Switch'
 import TextField from '@mui/material/TextField'
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { useTheme } from '@mui/material/styles'
@@ -12,14 +10,14 @@ import type { ChangeEvent } from 'react'
 import { useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '@/api/eosApi'
 import { useCreateLocationMutation, useReplaceLocationMutation } from '@/api/eosApi'
+import type { Location } from '@/api/types'
 import { ErrorAlert } from '@/components/ErrorAlert'
 import '@/styles/form-dialog.css'
 
 interface Props {
   open: boolean
-  location?: LocationRead
+  location?: Location
   onClose: () => void
 }
 
@@ -30,23 +28,15 @@ interface FormState {
   city: string
   country: string
   additionalInfo: string
-  privacyNoticeUrl: string
-  retentionDays: string
-  hostRequired: boolean
-  active: boolean
 }
 
-const toForm = (location?: LocationRead): FormState => ({
+const toForm = (location?: Location): FormState => ({
   companyName: location?.companyName ?? '',
-  street: location?.address.street ?? '',
-  postalCode: location?.address.postalCode ?? '',
-  city: location?.address.city ?? '',
-  country: location?.address.country ?? 'DE',
+  street: location?.street ?? '',
+  postalCode: location?.postalCode ?? '',
+  city: location?.city ?? '',
+  country: location?.country ?? 'Germany',
   additionalInfo: location?.additionalInfo ?? '',
-  privacyNoticeUrl: location?.privacyNoticeUrl ?? '',
-  retentionDays: String(location?.retentionDays ?? 90),
-  hostRequired: location?.hostRequired ?? false,
-  active: location?.active ?? true,
 })
 
 export function LocationFormDialog({ open, location, onClose }: Props) {
@@ -59,8 +49,8 @@ export function LocationFormDialog({ open, location, onClose }: Props) {
   const [replaceLocation, replace] = useReplaceLocationMutation()
 
   const handleChange = useCallback((event: ChangeEvent<HTMLInputElement>) => {
-    const { name, type, value, checked } = event.target
-    setForm((current) => ({ ...current, [name]: type === 'checkbox' ? checked : value }))
+    const { name, value } = event.target
+    setForm((current) => ({ ...current, [name]: value }))
   }, [])
 
   const complete = useMemo(
@@ -68,34 +58,25 @@ export function LocationFormDialog({ open, location, onClose }: Props) {
       form.companyName.trim() !== '' &&
       form.street.trim() !== '' &&
       form.postalCode.trim() !== '' &&
-      form.city.trim() !== '',
+      form.city.trim() !== '' &&
+      form.country.trim() !== '',
     [form],
   )
 
   const submit = useCallback(async () => {
-    const locationRequest = {
+    const body = {
       companyName: form.companyName.trim(),
-      address: {
-        street: form.street.trim(),
-        postalCode: form.postalCode.trim(),
-        city: form.city.trim(),
-        ...(form.country.trim() && { country: form.country.trim().toUpperCase() }),
-      },
-      ...(form.additionalInfo.trim() && { additionalInfo: form.additionalInfo.trim() }),
-      ...(form.privacyNoticeUrl.trim() && { privacyNoticeUrl: form.privacyNoticeUrl.trim() }),
-      hostRequired: form.hostRequired,
-      active: form.active,
-      retentionDays: Number(form.retentionDays) || 90,
+      street: form.street.trim(),
+      postalCode: form.postalCode.trim(),
+      city: form.city.trim(),
+      country: form.country.trim(),
+      additionalInfo: form.additionalInfo.trim() || null,
     }
 
     if (location) {
-      await replaceLocation({
-        locationId: location.id,
-        'If-Match': '*',
-        locationRequest,
-      }).unwrap()
+      await replaceLocation({ locationId: location.id, body }).unwrap()
     } else {
-      await createLocation({ locationRequest }).unwrap()
+      await createLocation(body).unwrap()
     }
     onClose()
   }, [createLocation, form, location, onClose, replaceLocation])
@@ -123,16 +104,16 @@ export function LocationFormDialog({ open, location, onClose }: Props) {
           <TextField
             required
             fullWidth
-            label={t('admin.locations.field.companyName')}
             name="companyName"
+            label={t('admin.locations.field.companyName')}
             value={form.companyName}
             onChange={handleChange}
           />
           <TextField
             required
             fullWidth
-            label={t('admin.locations.field.street')}
             name="street"
+            label={t('admin.locations.field.street')}
             value={form.street}
             onChange={handleChange}
           />
@@ -140,63 +121,36 @@ export function LocationFormDialog({ open, location, onClose }: Props) {
             <TextField
               required
               className="eos-form-dialog__field--postal"
-              label={t('admin.locations.field.postalCode')}
               name="postalCode"
+              label={t('admin.locations.field.postalCode')}
               value={form.postalCode}
               onChange={handleChange}
             />
             <TextField
               required
               fullWidth
-              label={t('admin.locations.field.city')}
               name="city"
+              label={t('admin.locations.field.city')}
               value={form.city}
               onChange={handleChange}
             />
-            <TextField
-              className="eos-form-dialog__field--country"
-              label={t('admin.locations.field.country')}
-              name="country"
-              value={form.country}
-              onChange={handleChange}
-              slotProps={{ htmlInput: { maxLength: 2 } }}
-            />
           </div>
+          <TextField
+            required
+            fullWidth
+            name="country"
+            label={t('admin.locations.field.country')}
+            value={form.country}
+            onChange={handleChange}
+          />
           <TextField
             fullWidth
             multiline
             minRows={2}
-            label={t('admin.locations.field.additionalInfo')}
             name="additionalInfo"
+            label={t('admin.locations.field.additionalInfo')}
             value={form.additionalInfo}
             onChange={handleChange}
-          />
-          <TextField
-            fullWidth
-            type="url"
-            label={t('admin.locations.field.privacyNoticeUrl')}
-            name="privacyNoticeUrl"
-            value={form.privacyNoticeUrl}
-            onChange={handleChange}
-          />
-          <TextField
-            type="number"
-            className="eos-form-dialog__field--narrow"
-            label={t('admin.locations.field.retentionDays')}
-            name="retentionDays"
-            value={form.retentionDays}
-            onChange={handleChange}
-            slotProps={{ htmlInput: { min: 1, max: 3650 } }}
-          />
-          <FormControlLabel
-            control={
-              <Switch name="hostRequired" checked={form.hostRequired} onChange={handleChange} />
-            }
-            label={t('admin.locations.field.hostRequired')}
-          />
-          <FormControlLabel
-            control={<Switch name="active" checked={form.active} onChange={handleChange} />}
-            label={t('admin.locations.field.active')}
           />
         </div>
       </DialogContent>

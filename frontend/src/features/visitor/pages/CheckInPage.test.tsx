@@ -19,8 +19,11 @@ describe('CheckInPage', () => {
         HttpResponse.json({
           id: LOCATION_ID,
           companyName: 'Hamburg HQ',
-          address: { street: 'Hafenstr. 1', postalCode: '20095', city: 'Hamburg', country: 'DE' },
-          hostRequired: false,
+          street: 'Hafenstr. 1',
+          postalCode: '20095',
+          city: 'Hamburg',
+          country: 'Germany',
+          additionalInfo: null,
         }),
       ),
       http.post('/api/v1/public/visits', async ({ request }) => {
@@ -30,21 +33,19 @@ describe('CheckInPage', () => {
             visit: {
               id: '22222222-2222-2222-2222-222222222222',
               visitorName: 'Ada Lovelace',
+              visitorCompany: null,
               visitDate: '2026-09-11',
-              status: 'ON_SITE',
-              location: {
-                id: LOCATION_ID,
-                companyName: 'Hamburg HQ',
-                address: {
-                  street: 'Hafenstr. 1',
-                  postalCode: '20095',
-                  city: 'Hamburg',
-                  country: 'DE',
-                },
-              },
+              purpose: 'Workshop',
+              hostName: '—',
+              contactInfo: 'ada@example.com',
+              status: 'CHECKED_IN',
+              locationId: LOCATION_ID,
+              locationName: 'Hamburg HQ',
+              checkedOutAt: null,
+              createdAt: '2026-09-11T08:00:00Z',
+              updatedAt: '2026-09-11T08:00:00Z',
             },
             visitToken: 'token-abc',
-            badgeUrl: '/visit/22222222-2222-2222-2222-222222222222',
           },
           { status: 201 },
         )
@@ -59,7 +60,7 @@ describe('CheckInPage', () => {
     await screen.findByText('Hamburg HQ')
     await userEvent.type(screen.getByLabelText(/^Name/), 'Ada Lovelace')
     await userEvent.type(screen.getByLabelText(/^Purpose/), 'Workshop')
-    await userEvent.type(screen.getByLabelText(/^Email/), 'ada@example.com')
+    await userEvent.type(screen.getByLabelText(/^Contact/), 'ada@example.com')
     await userEvent.click(screen.getByRole('checkbox'))
     await userEvent.click(screen.getByRole('button', { name: 'Check in' }))
 
@@ -67,8 +68,10 @@ describe('CheckInPage', () => {
     expect(selfCheckIn).toHaveBeenCalledWith({
       locationId: LOCATION_ID,
       visitorName: 'Ada Lovelace',
+      visitorCompany: null,
       purpose: 'Workshop',
-      contact: { text: 'ada@example.com', email: 'ada@example.com' },
+      hostName: null,
+      contactInfo: 'ada@example.com',
       privacyConsent: true,
     })
     await waitFor(() =>
@@ -98,8 +101,11 @@ describe('CheckInPage', () => {
         HttpResponse.json({
           id: LOCATION_ID,
           companyName: 'Hamburg HQ',
-          address: { street: 'Hafenstr. 1', postalCode: '20095', city: 'Hamburg', country: 'DE' },
-          hostRequired: false,
+          street: 'Hafenstr. 1',
+          postalCode: '20095',
+          city: 'Hamburg',
+          country: 'Germany',
+          additionalInfo: null,
         }),
       ),
     )

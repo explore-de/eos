@@ -1,6 +1,5 @@
 import DeleteIcon from '@mui/icons-material/DeleteOutlined'
 import EditIcon from '@mui/icons-material/EditOutlined'
-import LoginIcon from '@mui/icons-material/Login'
 import LogoutIcon from '@mui/icons-material/Logout'
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf'
 import IconButton from '@mui/material/IconButton'
@@ -8,9 +7,9 @@ import Tooltip from '@mui/material/Tooltip'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { Visit } from '@/api/eosApi'
-import { useCheckInVisitMutation, useCheckOutVisitMutation } from '@/api/eosApi'
 import { useLazyVisitorPassPdfQuery } from '@/api/binaryApi'
+import { useCheckOutVisitMutation } from '@/api/eosApi'
+import type { Visit } from '@/api/types'
 import './VisitActions.css'
 
 interface Props {
@@ -21,26 +20,17 @@ interface Props {
 
 export function VisitActions({ visit, onEdit, onDelete }: Props) {
   const { t } = useTranslation()
-  const [checkInVisit, checkIn] = useCheckInVisitMutation()
   const [checkOutVisit, checkOut] = useCheckOutVisitMutation()
   const [fetchPass, pass] = useLazyVisitorPassPdfQuery()
 
   const openPass = useCallback(async () => {
-    const blob = await fetchPass({ visitId: visit.id }).unwrap()
+    const blob = await fetchPass(visit.id).unwrap()
     window.open(URL.createObjectURL(blob), '_blank', 'noopener')
   }, [fetchPass, visit.id])
 
   const handleOpenPass = useCallback(() => void openPass(), [openPass])
 
-  const checkIntoVisit = useCallback(
-    () => void checkInVisit({ visitId: visit.id }),
-    [checkInVisit, visit.id],
-  )
-
-  const checkOutOfVisit = useCallback(
-    () => void checkOutVisit({ visitId: visit.id }),
-    [checkOutVisit, visit.id],
-  )
+  const checkOutOfVisit = useCallback(() => void checkOutVisit(visit.id), [checkOutVisit, visit.id])
 
   const edit = useCallback(() => onEdit(visit), [onEdit, visit])
 
@@ -48,20 +38,7 @@ export function VisitActions({ visit, onEdit, onDelete }: Props) {
 
   return (
     <div className="eos-visit-actions">
-      {visit.status === 'EXPECTED' ? (
-        <Tooltip title={t('admin.visits.checkIn')}>
-          <span>
-            <IconButton
-              aria-label={t('admin.visits.checkIn')}
-              disabled={checkIn.isLoading}
-              onClick={checkIntoVisit}
-            >
-              <LoginIcon fontSize="small" />
-            </IconButton>
-          </span>
-        </Tooltip>
-      ) : null}
-      {visit.status === 'ON_SITE' ? (
+      {visit.status === 'CHECKED_IN' ? (
         <Tooltip title={t('admin.visits.checkOut')}>
           <span>
             <IconButton

@@ -37,9 +37,10 @@
   "visit": {
     "status": {
       "label": "Status",
-      "EXPECTED": "Erwartet",
-      "ON_SITE": "Vor Ort",
-      "CHECKED_OUT": "Abgemeldet"
+      "REGISTERED": "Erwartet",
+      "CHECKED_IN": "Vor Ort",
+      "CHECKED_OUT": "Abgemeldet",
+      "CANCELLED": "Storniert"
     },
     "field": {
       "visitorName": "Name",
@@ -47,11 +48,10 @@
       "visitDate": "Datum",
       "purpose": "Anlass",
       "hostName": "Ansprechpartner",
-      "email": "E-Mail",
-      "phone": "Telefon",
       "checkInAt": "Angemeldet",
       "checkOutAt": "Abgemeldet",
-      "location": "Standort"
+      "location": "Standort",
+      "contactInfo": "Kontakt"
     }
   },
   "visitor": {
@@ -62,7 +62,7 @@
     "checkIn": {
       "heading": "Besuch anmelden",
       "intro": "Bitte tragen Sie Ihre Daten ein. Sie erhalten danach einen digitalen Besucherausweis.",
-      "contactHint": "E-Mail oder Telefon genügt.",
+      "contactHint": "E-Mail oder Telefonnummer.",
       "privacyConsent": "Ich willige in die Speicherung meiner Kontaktdaten ein.",
       "privacyNotice": "Datenschutzhinweis",
       "submit": "Anmelden",
@@ -96,12 +96,10 @@
       "pass": "Besucherpass",
       "filter": {
         "heading": "Filter",
-        "query": "Name, Firma, Ansprechpartner",
         "location": "Standort",
         "allLocations": "Alle Standorte",
         "status": "Status",
-        "from": "Von",
-        "to": "Bis"
+        "date": "Datum"
       },
       "total": "{{count}} Besuch",
       "total_other": "{{count}} Besuche"

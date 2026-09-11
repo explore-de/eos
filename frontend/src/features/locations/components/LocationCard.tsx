@@ -5,54 +5,48 @@ import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
-import Chip from '@mui/material/Chip'
 import Typography from '@mui/material/Typography'
 import { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 
-import type { LocationRead } from '@/api/eosApi'
+import type { Location } from '@/api/types'
 import './LocationCard.css'
 
 interface Props {
-  location: LocationRead
-  onShowQr: (location: LocationRead) => void
-  onEdit: (location: LocationRead) => void
-  onDeactivate: (location: LocationRead) => void
+  location: Location
+  onShowQr: (location: Location) => void
+  onEdit: (location: Location) => void
+  onDelete: (location: Location) => void
 }
 
-export function LocationCard({ location, onShowQr, onEdit, onDeactivate }: Props) {
+export function LocationCard({ location, onShowQr, onEdit, onDelete }: Props) {
   const { t } = useTranslation()
 
   const showQr = useCallback(() => onShowQr(location), [location, onShowQr])
   const edit = useCallback(() => onEdit(location), [location, onEdit])
-  const deactivate = useCallback(() => onDeactivate(location), [location, onDeactivate])
+  const remove = useCallback(() => onDelete(location), [location, onDelete])
 
   return (
-    <Card
-      variant="outlined"
-      className={`eos-location-card${location.active ? '' : ' eos-location-card--inactive'}`}
-    >
+    <Card variant="outlined" className="eos-location-card">
       <CardContent>
         <div className="eos-location-card__head">
           <Typography variant="subtitle1" className="eos-location-card__name">
             {location.companyName}
           </Typography>
-          {location.active ? null : <Chip size="small" label={t('admin.locations.inactive')} />}
         </div>
         <Typography variant="body2" color="text.secondary">
-          {location.address.street}
+          {location.street}
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          {location.address.postalCode} {location.address.city}
+          {location.postalCode} {location.city}
         </Typography>
-        {typeof location.onSiteCount === 'number' ? (
-          <Chip
-            size="small"
-            color="primary"
-            variant="outlined"
-            className="eos-location-card__count"
-            label={`${location.onSiteCount} ${t('admin.locations.onSiteCount')}`}
-          />
+        <Typography variant="body2" color="text.secondary">
+          {location.country}
+        </Typography>
+        {location.additionalInfo ? (
+          <Typography variant="body2" color="text.secondary" className="eos-location-card__info">
+            {location.additionalInfo}
+          </Typography>
         ) : null}
       </CardContent>
       <CardActions className="eos-location-card__actions">
@@ -62,11 +56,9 @@ export function LocationCard({ location, onShowQr, onEdit, onDeactivate }: Props
         <Button size="small" startIcon={<EditIcon />} onClick={edit}>
           {t('common.edit')}
         </Button>
-        {location.active ? (
-          <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={deactivate}>
-            {t('common.delete')}
-          </Button>
-        ) : null}
+        <Button size="small" color="error" startIcon={<DeleteIcon />} onClick={remove}>
+          {t('common.delete')}
+        </Button>
       </CardActions>
     </Card>
   )
