@@ -13,7 +13,7 @@ services:
       timeout: 5s
       retries: 12
     ports:
-      - "5432:5432"
+      - "${EOS_DB_PORT:-5432}:5432"
     volumes:
       - eos-db:/var/lib/postgresql
 
@@ -36,7 +36,7 @@ services:
       timeout: 5s
       retries: 24
     ports:
-      - "8180:8080"
+      - "${EOS_OIDC_PORT:-8180}:8080"
     volumes:
       - ./infra/keycloak/eos-realm.json:/opt/keycloak/data/import/eos-realm.json:ro
 
@@ -49,7 +49,10 @@ services:
       QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://db:5432/eos
       QUARKUS_DATASOURCE_USERNAME: eos
       QUARKUS_DATASOURCE_PASSWORD: ${EOS_DB_PASSWORD:-eos-local-only}
-      QUARKUS_OIDC_AUTH_SERVER_URL: http://host.docker.internal:8180/realms/eos
+      QUARKUS_OIDC_AUTH_SERVER_URL: http://oidc:8080/realms/eos
+      QUARKUS_OIDC_DISCOVERY_ENABLED: "false"
+      QUARKUS_OIDC_JWKS_PATH: protocol/openid-connect/certs
+      QUARKUS_OIDC_TOKEN_ISSUER: http://localhost:${EOS_OIDC_PORT:-8180}/realms/eos
       QUARKUS_OIDC_APPLICATION_TYPE: service
       QUARKUS_HTTP_CORS_ENABLED: "true"
       QUARKUS_HTTP_CORS_ORIGINS: http://localhost:3000,http://localhost:3001
@@ -62,29 +65,15 @@ services:
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
-      - "8080:8080"
+      - "${EOS_BACKEND_PORT:-8080}:8080"
 
-  admin-panel:
-    image: ${EOS_ADMIN_PANEL_IMAGE:-eos/admin-panel:local}
-    profiles: ["frontends"]
-    environment:
-      EOS_API_BASE_URL: http://localhost:8080
-      EOS_OIDC_URL: http://localhost:8180/realms/eos
-      EOS_OIDC_CLIENT_ID: eos-admin-panel
+  frontend:
+    build:
+      context: ./frontend
     depends_on:
       - backend
     ports:
-      - "3000:80"
-
-  visitor-web:
-    image: ${EOS_VISITOR_WEB_IMAGE:-eos/visitor-web:local}
-    profiles: ["frontends"]
-    environment:
-      EOS_API_BASE_URL: http://localhost:8080
-    depends_on:
-      - backend
-    ports:
-      - "3001:80"
+      - "${EOS_FRONTEND_PORT:-3000}:80"
 
 volumes:
   eos-db:

@@ -27,6 +27,7 @@
     {
       "username": "eos-admin",
       "enabled": true,
+      "email": "eos-admin@example.invalid",
       "emailVerified": true,
       "firstName": "EOS",
       "lastName": "Admin",

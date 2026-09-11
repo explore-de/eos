@@ -1,5 +1,7 @@
 *
 !pom.xml
+!config/
+!config/**
 !src/
 !src/main/
 !src/main/**

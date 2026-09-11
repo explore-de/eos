@@ -52,6 +52,31 @@ The dev server proxies `/api` to `http://localhost:8080`, so run the backend wit
 
 `VITE_USE_MOCKS=true` starts an MSW service worker in the browser that serves `src/mocks/handlers.ts` against the fixtures in `src/mocks/fixtures.ts` — every page is clickable with no backend running. `.env.development.local` enables it by default; set it to `false` (or delete the file) to talk to the real Quarkus service. Mocks are never bundled into a production build unless the flag is set at build time.
 
+## Running the whole stack with Docker Compose
+
+From the repository root, one command brings up Postgres, Keycloak, the Quarkus backend and this app:
+
+```shell
+docker compose up -d --build
+```
+
+| Service  | URL                   | Notes                                                                                              |
+| -------- | --------------------- | -------------------------------------------------------------------------------------------------- |
+| frontend | http://localhost:3000 | nginx serving the production build; `/api/**` is proxied to `backend:8080`, so no CORS is involved |
+| backend  | http://localhost:8080 | `/q/health/ready` for readiness                                                                    |
+| Keycloak | http://localhost:8180 | realm `eos`, user `eos-admin` / `admin-local-only`, client `eos-admin-panel`                       |
+| Postgres | localhost:5432        | database, user and password `eos`                                                                  |
+
+Every published port can be moved aside when something else on the host already owns it:
+
+```shell
+EOS_DB_PORT=55432 EOS_BACKEND_PORT=18080 docker compose up -d
+```
+
+`EOS_OIDC_PORT` and `EOS_FRONTEND_PORT` work the same way. Only the host side changes — inside the compose network the services keep talking over their own names and default ports.
+
+The image build is `frontend/Dockerfile`: a pnpm build stage (pinned through `packageManager` so it matches the lockfile) and an nginx stage with `nginx.conf`, which adds the SPA fallback needed for `/check-in/:locationId` and `/visit/:visitId` to survive a reload.
+
 ## Scripts
 
 | Script               | Purpose                                          |

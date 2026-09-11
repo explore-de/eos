@@ -2,6 +2,7 @@ FROM maven:3.9.16-eclipse-temurin-25 AS build
 
 WORKDIR /workspace
 COPY pom.xml ./
+COPY config/ config/
 COPY src/main/ src/main/
 RUN mvn -B -Dmaven.test.skip=true package
 
